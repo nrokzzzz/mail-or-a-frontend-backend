@@ -1,0 +1,151 @@
+/* Previously this was `body {}` which overrode the entire theme system.
+   Scoped to .jobtable-page so only the Jobs page is affected. */
+.jobtable-page {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* container */
+.container {
+  width: 100%;
+  max-width: 950px;   /* instead of fixed width */
+  margin: 60px auto;  /* THIS centers perfectly */
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+table {
+  width: 100%;
+}
+
+.pagination,
+.jump {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 15px;
+}
+
+/* title */
+
+h2{
+font-size:20px;
+margin-bottom:10px;
+color:var(--color-primary);
+}
+
+/* search bar */
+
+.topbar{
+display:flex;
+justify-content:flex-start;
+margin-bottom:10px;
+}
+
+.topbar input{
+padding:6px 10px;
+font-size:13px;
+border:1px solid #333;
+border-radius:4px;
+background:#f9f7f7;
+color:#333;
+width:230px;
+}
+
+/* table */
+
+table{
+width:100%;
+border-collapse:collapse;
+background:#1a1a1a;
+font-size:13px;
+color:#e6e6e6;   /* FIX: ensures row text is visible */
+}
+
+/* header */
+
+th{
+background:#2a2a2a;
+color:#fff;
+padding:9px;
+text-align:left;
+font-weight:500;
+}
+
+/* rows */
+
+td{
+padding:9px;
+border-bottom:1px solid #2c2c2c;
+color:#e6e6e6;   /* FIX: ensures data text is visible */
+}
+
+tbody tr{
+color:#e6e6e6;   /* FIX: ensures rows show */
+}
+
+tr:hover{
+background:#242424;
+}
+
+/* pagination */
+
+.pagination{
+margin-top:15px;
+display:flex;
+justify-content:center;
+align-items:center;
+gap:5px;
+}
+
+.pagination button{
+padding:4px 9px;
+border:1px solid #333;
+background:#1a1a1a;
+color:#fff;
+cursor:pointer;
+font-size:13px;
+}
+
+.pagination button.active{
+border:2px solid var(--color-primary);
+color:var(--color-primary);
+font-weight:bold;
+}
+
+.pagination button:hover{
+background:#242424;
+}
+
+.dots{
+padding:0 5px;
+color:#888;
+}
+
+/* jump page */
+
+.jump{
+margin-top:10px;
+font-size:13px;
+display:flex;
+justify-content:center;
+align-items:center;
+gap:10px;
+}
+
+.jump input{
+padding:5px;
+width:70px;
+border:1px solid #333;
+background:#f9f7f7;
+color:#333;
+}
+
+.jump button{
+padding:6px 9px;
+background:var(--color-primary);
+border:none;
+color:white;
+cursor:pointer;
+}
