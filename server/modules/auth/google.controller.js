@@ -42,18 +42,19 @@ exports.googleAuth = async (req, res) => {
  * Step 2: Handle callback
  */
 exports.googleCallback = async (req, res) => {
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
   try {
     const { code, state } = req.query;
 
     if (!code || !state) {
-      return res.status(400).json({ message: "Authorization code or state missing" });
+      return res.redirect(`${frontendUrl}/profile?gmail=error&msg=Authorization+code+missing`);
     }
 
     let decoded;
     try {
         decoded = jwt.verify(state, process.env.JWT_SECRET || "fallback_secret");
     } catch (err) {
-        return res.status(400).json({ message: "Invalid or expired state" });
+        return res.redirect(`${frontendUrl}/profile?gmail=error&msg=Session+expired`);
     }
 
     const userId = decoded.userId;
@@ -74,15 +75,37 @@ exports.googleCallback = async (req, res) => {
 
     const emailAddress = profile.data.emailAddress;
 
+    // Check if this email is already connected by this user
+    const existingAccount = await ConnectedAccount.findOne({ userId, emailAddress });
+
+    if (existingAccount) {
+      // Update tokens
+      existingAccount.accessToken = tokens.access_token;
+      if (tokens.refresh_token) existingAccount.refreshToken = tokens.refresh_token;
+      existingAccount.tokenExpiry = tokens.expiry_date
+        ? new Date(tokens.expiry_date)
+        : new Date(Date.now() + 3600 * 1000);
+      existingAccount.isActive = true;
+
+      // Re-watch
+      const watchResponse = await gmail.users.watch({
+        userId: "me",
+        requestBody: {
+          topicName: process.env.GOOGLE_PUBSUB_TOPIC,
+          labelIds: ["INBOX"],
+        },
+      });
+      existingAccount.lastHistoryId = watchResponse.data.historyId;
+      await existingAccount.save();
+
+      return res.redirect(`${frontendUrl}/profile?gmail=success&email=${encodeURIComponent(emailAddress)}`);
+    }
+
     // Limit to max 3 accounts
-    const accountCount = await ConnectedAccount.countDocuments({
-      userId,
-    });
+    const accountCount = await ConnectedAccount.countDocuments({ userId });
 
     if (accountCount >= 3) {
-      return res.status(400).json({
-        message: "Maximum 3 connected email accounts allowed",
-      });
+      return res.redirect(`${frontendUrl}/profile?gmail=error&msg=Maximum+3+accounts+allowed`);
     }
 
     // Start Gmail watch()
@@ -103,17 +126,14 @@ exports.googleCallback = async (req, res) => {
       refreshToken: tokens.refresh_token,
       tokenExpiry: tokens.expiry_date
         ? new Date(tokens.expiry_date)
-        : new Date(Date.now() + 3600 * 1000), // default 1 hour if Google doesn't provide it
+        : new Date(Date.now() + 3600 * 1000),
       lastHistoryId: watchResponse.data.historyId,
       isActive: true,
     });
 
-    res.json({
-      message: "Gmail connected successfully",
-      email: emailAddress,
-    });
+    res.redirect(`${frontendUrl}/profile?gmail=success&email=${encodeURIComponent(emailAddress)}`);
   } catch (error) {
     console.error("Google callback error:", error);
-    res.status(500).json({ message: "Google connection failed" });
+    res.redirect(`${frontendUrl}/profile?gmail=error&msg=Connection+failed`);
   }
 };

@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react"; // profile-v2
 import { FiUploadCloud, FiEdit2, FiSave, FiX, FiLink, FiCheckCircle, FiLock, FiEye, FiEyeOff, FiPlus, FiMail, FiTrash2, FiSmartphone, FiShield } from "react-icons/fi";
 import { useScrollAnimation } from "../../hooks/useScrollAnimation";
+import { useSearchParams } from "react-router-dom";
 import * as pdfjsLib from 'pdfjs-dist';
 import { profileService } from "../../services/profileService";
+import axiosClient from "../../helpers/axiosClient";
 import CountryCodeSelect from "../../components/CountryCodeSelect";
 import "./UpdateProfile.css";
 
@@ -40,6 +42,11 @@ export default function UpdateProfile() {
   const [mobileOtpError, setMobileOtpError] = useState("");
   const [mobileOtpTimer, setMobileOtpTimer] = useState(0);
   const otpInputRefs = useRef([]);
+
+  // Connected Google Accounts
+  const [connectedAccounts, setConnectedAccounts] = useState([]);
+  const [syncingAccountId, setSyncingAccountId] = useState(null);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   // Resume Upload State
   const [resumeFile, setResumeFile] = useState(null);
@@ -88,7 +95,30 @@ export default function UpdateProfile() {
       }
     };
     fetchProfile();
+    fetchConnectedAccounts();
+
+    // Handle Gmail OAuth callback redirect
+    const gmailStatus = searchParams.get('gmail');
+    if (gmailStatus === 'success') {
+      const email = searchParams.get('email');
+      alert(`✅ Gmail connected: ${email || 'Success'}`);
+      setSearchParams({});
+      fetchConnectedAccounts();
+    } else if (gmailStatus === 'error') {
+      const msg = searchParams.get('msg');
+      alert(`❌ Gmail connection failed: ${msg || 'Unknown error'}`);
+      setSearchParams({});
+    }
   }, []);
+
+  const fetchConnectedAccounts = async () => {
+    try {
+      const response = await axiosClient.get('/api/accounts');
+      setConnectedAccounts(response.data || []);
+    } catch (err) {
+      console.error('Failed to fetch connected accounts', err);
+    }
+  };
 
   // Mobile OTP timer countdown
   useEffect(() => {
@@ -178,6 +208,36 @@ export default function UpdateProfile() {
     }
   };
 
+  // ── Google Account Handlers ──
+  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+  const handleConnectGoogle = () => {
+    // Redirect to backend Google OAuth endpoint (needs auth cookie)
+    window.location.href = `${API_BASE}/api/google`;
+  };
+
+  const handleDisconnectAccount = async (accountId) => {
+    if (!confirm("Disconnect this Gmail account? You will stop receiving email tracking from it.")) return;
+    try {
+      await axiosClient.delete(`/api/accounts/${accountId}`);
+      setConnectedAccounts(prev => prev.filter(a => a._id !== accountId));
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to disconnect account");
+    }
+  };
+
+  const handleSyncAccount = async (accountId) => {
+    setSyncingAccountId(accountId);
+    try {
+      const res = await axiosClient.post(`/api/accounts/${accountId}/sync`);
+      alert(`✅ Sync complete! ${res.data.processed} emails processed, ${res.data.skipped} skipped.`);
+    } catch (err) {
+      alert(err.response?.data?.message || "Sync failed");
+    } finally {
+      setSyncingAccountId(null);
+    }
+  };
+
   const handleExtractResume = async () => {
     if (!resumeFile) {
       alert("Please upload a PDF or DOCX resume file first.");
@@ -260,25 +320,6 @@ export default function UpdateProfile() {
 
   return (
     <div className="profile-page">
-      {/* Page Header */}
-      <div className="profile-page-header">
-        <div>
-          <h1 className="profile-page-title">Update Profile</h1>
-          <p className="profile-page-subtitle">Keep your information up to date to get the best matches.</p>
-        </div>
-        <button 
-          onClick={handleUpdateProfile}
-          disabled={isSaving}
-          className="profile-save-btn"
-        >
-          {isSaving ? "Saving..." : <><FiSave /> Update Profile</>}
-        </button>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="profile-progress-bar">
-        <div className="profile-progress-fill" style={{ width: `${completionProgress}%` }} />
-      </div>
 
       <div className="profile-grid">
         
@@ -713,83 +754,58 @@ export default function UpdateProfile() {
             </div>
           </Card>
 
-          {/* Connected Emails */}
-          <div className="profile-card">
+          {/* Connected Gmail Accounts */}
+          <div className="profile-card" style={{ maxHeight: 'none' }}>
             <div className="profile-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
               <div>
                 <h3 className="profile-card-title">
-                  <FiMail className="profile-card-icon" /> Connected Mails
+                  <FiMail className="profile-card-icon" /> Connected Accounts
                 </h3>
-                <p className="profile-card-desc">Connect up to 3 email addresses.</p>
+                <p className="profile-card-desc">Connect Gmail accounts to track job emails. Max 3.</p>
               </div>
-              <span className="connected-count">{profileData.connectedMails.length} / 3</span>
+              <span className="connected-count">{connectedAccounts.length} / 3</span>
             </div>
              
             <div className="connected-mails-list">
-              {profileData.connectedMails.map((mail, idx) => {
-                const isGoogle = mail.includes('@gmail.com');
-                const isMicrosoft = mail.includes('@outlook.com') || mail.includes('@hotmail.com');
-                return (
-                  <div key={idx} className="connected-mail-item">
-                    <div className="connected-mail-icon">
-                      {isGoogle ? (
-                        <img src="https://www.svgrepo.com/show/475656/google-color.svg" width="16" height="16" alt="Google" />
-                      ) : isMicrosoft ? (
-                        <img src="https://www.svgrepo.com/show/475661/microsoft-color.svg" width="16" height="16" alt="Microsoft" />
-                      ) : (
-                        <FiMail size={14} />
-                      )}
-                    </div>
-                    <span className="connected-mail-address">{mail}</span>
-                    <button 
-                      onClick={() => {
-                        const newData = profileData.connectedMails.filter((_, i) => i !== idx);
-                        setProfileData({...profileData, connectedMails: newData});
-                        saveSection('connectedMails', newData);
-                      }}
-                      className="connected-mail-remove"
-                      title="Remove Email"
-                    >
-                      <FiTrash2 size={14} />
-                    </button>
+              {connectedAccounts.map((account) => (
+                <div key={account._id} className="connected-mail-item">
+                  <div className="connected-mail-icon">
+                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" width="16" height="16" alt="Google" />
                   </div>
-                );
-              })}
-              
-              {profileData.connectedMails.length < 3 && (
-                <div className="connected-mail-add">
-                  <input 
-                    id="newEmailInput"
-                    type="email" 
-                    placeholder="Enter new email address..." 
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        const val = e.target.value.trim();
-                        if (val && val.includes('@')) {
-                          const newData = [...profileData.connectedMails, val];
-                          setProfileData({...profileData, connectedMails: newData});
-                          saveSection('connectedMails', newData);
-                          e.target.value = '';
-                        }
-                      }
-                    }}
-                  />
+                  <span className="connected-mail-address">{account.emailAddress}</span>
                   <button 
-                    onClick={() => {
-                      const input = document.getElementById('newEmailInput');
-                      const val = input.value.trim();
-                      if (val && val.includes('@')) {
-                        const newData = [...profileData.connectedMails, val];
-                        setProfileData({...profileData, connectedMails: newData});
-                        saveSection('connectedMails', newData);
-                        input.value = '';
-                      }
-                    }}
-                    className="connected-mail-add-btn"
+                    onClick={() => handleSyncAccount(account._id)}
+                    className="connected-mail-sync"
+                    title="Sync emails now"
+                    disabled={syncingAccountId === account._id}
                   >
-                    <FiPlus size={14} /> Add
+                    {syncingAccountId === account._id ? "⏳" : "🔄"}
+                  </button>
+                  <button 
+                    onClick={() => handleDisconnectAccount(account._id)}
+                    className="connected-mail-remove"
+                    title="Disconnect"
+                  >
+                    <FiTrash2 size={14} />
                   </button>
                 </div>
+              ))}
+              
+              {connectedAccounts.length < 3 && (
+                <button 
+                  onClick={handleConnectGoogle}
+                  className="connected-mail-add-btn"
+                  style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}
+                >
+                  <img src="https://www.svgrepo.com/show/475656/google-color.svg" width="14" height="14" alt="" />
+                  Connect Google Account
+                </button>
+              )}
+
+              {connectedAccounts.length === 0 && (
+                <p className="list-empty" style={{ textAlign: 'center', padding: '8px 0' }}>
+                  No accounts connected. Connect a Gmail account to start tracking job emails.
+                </p>
               )}
             </div>
           </div>

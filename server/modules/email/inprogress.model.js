@@ -32,6 +32,8 @@ const inProgressSchema = new mongoose.Schema(
     from:    String,
     snippet: String,
     body:    String,
+    matter:  String,
+    links:   [String],
 
     receivedAt: Date,
 

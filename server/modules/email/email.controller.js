@@ -19,6 +19,8 @@ function decryptEmail(email, type) {
     from:    decrypt(email.from),
     snippet: decrypt(email.snippet),
     body:    decrypt(email.body),
+    matter:  email.matter ? decrypt(email.matter) : "",
+    links:   Array.isArray(email.links) ? email.links.map(l => decrypt(l)) : [],
   };
 }
 

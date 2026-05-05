@@ -1,13 +1,13 @@
 // webhooks/gmail.webhook.controller.js
 
-const ConnectedAccount  = require("../modules/connectedAccount/connectedAccount.model");
+const ConnectedAccount = require("../modules/connectedAccount/connectedAccount.model");
 const RegistrationEmail = require("../modules/email/registration.model");
-const RegisteredEmail   = require("../modules/email/registered.model");
-const InProgressEmail   = require("../modules/email/inprogress.model");
-const ConfirmedEmail    = require("../modules/email/confirmed.model");
+const RegisteredEmail = require("../modules/email/registered.model");
+const InProgressEmail = require("../modules/email/inprogress.model");
+const ConfirmedEmail = require("../modules/email/confirmed.model");
 const { refreshGoogleTokenIfNeeded, getGmailClient } = require("../services/google.service");
-const { encrypt }        = require("../utils/crypto");
-const { classifyEmail }  = require("../services/emailAI.service");
+const { encrypt } = require("../utils/crypto");
+const { classifyEmail } = require("../services/emailAI.service");
 
 const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
 
@@ -69,9 +69,9 @@ const VALID_CATEGORIES = ["job", "internship", "hackathon", "workshop"];
  */
 function getModelForStage(stage) {
   if (stage === "registration") return RegistrationEmail;
-  if (stage === "registered")   return RegisteredEmail;
-  if (stage === "inprogress")   return InProgressEmail;
-  if (stage === "confirmed")    return ConfirmedEmail;
+  if (stage === "registered") return RegisteredEmail;
+  if (stage === "inprogress") return InProgressEmail;
+  if (stage === "confirmed") return ConfirmedEmail;
   return null; // "other" stage — skip
 }
 
@@ -137,10 +137,10 @@ async function fetchNewEmails(account, newHistoryId) {
     }
 
     const oauthClient = await refreshGoogleTokenIfNeeded(account);
-    const gmail       = getGmailClient(oauthClient);
+    const gmail = getGmailClient(oauthClient);
 
     const historyResponse = await gmail.users.history.list({
-      userId:         "me",
+      userId: "me",
       startHistoryId: account.lastHistoryId,
     });
 
@@ -162,13 +162,13 @@ async function fetchNewEmails(account, newHistoryId) {
         try {
           const fullMessage = await gmail.users.messages.get({
             userId: "me",
-            id:     msg.id,
+            id: msg.id,
           });
 
           const headers = fullMessage.data.payload.headers;
 
           const subject = headers.find((h) => h.name === "Subject")?.value || "";
-          const from    = headers.find((h) => h.name === "From")?.value    || "";
+          const from = headers.find((h) => h.name === "From")?.value || "";
           const snippet = fullMessage.data.snippet || "";
 
           // Extract full body — recursive MIME traversal
@@ -176,7 +176,7 @@ async function fetchNewEmails(account, newHistoryId) {
 
           // 1️⃣ Classify FIRST — determines category + stage
           const aiResult = await classifyEmail(subject, snippet);
-          const { category, stage, deadline } = aiResult;
+          const { category, stage, deadline, matter, links } = aiResult;
 
           console.log(`🤖 Classified as: [${category}] stage: [${stage}]`);
 
@@ -196,17 +196,19 @@ async function fetchNewEmails(account, newHistoryId) {
           const expiresAt = new Date(Date.now() + THREE_MONTHS_MS);
 
           const baseDoc = {
-            userId:             account.userId,
+            userId: account.userId,
             connectedAccountId: account._id,
-            provider:           "google",
-            providerMessageId:  msg.id,
-            subject:            encrypt(subject),
-            from:               encrypt(from),
-            snippet:            encrypt(snippet),
-            body:               encrypt(emailBody),   // full body, encrypted
-            receivedAt:         new Date(parseInt(fullMessage.data.internalDate)),
+            provider: "google",
+            providerMessageId: msg.id,
+            subject: encrypt(subject),
+            from: encrypt(from),
+            snippet: encrypt(snippet),
+            body: encrypt(emailBody),   // full body, encrypted
+            matter: matter ? encrypt(matter) : encrypt(""),
+            links: Array.isArray(links) ? links.map(l => encrypt(l)) : [],
+            receivedAt: new Date(parseInt(fullMessage.data.internalDate)),
             category,                                 // job | internship | hackathon | workshop
-            aiProcessed:        true,
+            aiProcessed: true,
             expiresAt,
           };
 

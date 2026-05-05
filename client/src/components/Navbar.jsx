@@ -76,112 +76,101 @@ const Navbar = () => {
 
         {/* Nav menu */}
         <ul className={`nav-menu${menuOpen ? ' nav-menu--open' : ''}`}>
-          <li className="nav-item">
-            <Link to="/" className="nav-links" onClick={closeMenu}>Home</Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/dashboard" className="nav-links" onClick={closeMenu}>Dashboard</Link>
-          </li>
-          <li className="nav-item">
-            <Link to="/jobs" className="nav-links" onClick={closeMenu}>Job Offers</Link>
-          </li>
-
-          {/* ── Logged In: Profile Icon + Dropdown ── */}
           {isLoggedIn ? (
-            <li className="nav-item nav-profile-item" ref={dropdownRef}>
-              <button
-                className="nav-profile-btn"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-                aria-label="Profile menu"
-                id="nav-profile-btn"
-              >
-                <div className="nav-avatar">
-                  {user?.photo ? (
-                    <img src={user.photo} alt="Profile" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
-                  ) : (
-                    getInitials() || <FaUser size={14} />
-                  )}
-                </div>
-              </button>
-
-              {/* Dropdown */}
-              {dropdownOpen && (
-                <div className="nav-dropdown">
-                  {/* User info header */}
-                  <div className="nav-dropdown-header">
-                    <div className="nav-dropdown-avatar">
-                      {user?.photo ? (
-                        <img src={user.photo} alt="Profile" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
-                      ) : (
-                        getInitials() || <FaUser size={16} />
-                      )}
-                    </div>
-                    <div className="nav-dropdown-user-info">
-                      <span className="nav-dropdown-name">
-                        {user?.name || user?.username || 'User'}
-                      </span>
-                      <span className="nav-dropdown-email">
-                        {user?.email || ''}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="nav-dropdown-divider" />
-
-                  {/* Profile link */}
-                  <Link
-                    to="/profile"
-                    className="nav-dropdown-item"
-                    onClick={() => { setDropdownOpen(false); closeMenu(); }}
-                    id="nav-dropdown-profile"
-                  >
-                    <FaUser size={13} />
-                    <span>Profile</span>
-                  </Link>
-
-                  {/* Theme toggle */}
-                  <button
-                    className="nav-dropdown-item"
-                    onClick={() => { toggleTheme(); }}
-                    id="nav-dropdown-theme"
-                  >
-                    {theme === 'light' ? <FaMoon size={13} /> : <FaSun size={13} />}
-                    <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
-                  </button>
-
-                  <div className="nav-dropdown-divider" />
-
-                  {/* Logout */}
-                  <button
-                    className="nav-dropdown-item nav-dropdown-item--danger"
-                    onClick={handleLogout}
-                    id="nav-dropdown-logout"
-                  >
-                    <FaSignOutAlt size={13} />
-                    <span>Sign Out</span>
-                  </button>
-                </div>
-              )}
-            </li>
-          ) : (
             <>
-              {/* Theme toggle for guests */}
-              <li className="nav-item theme-toggle-item">
-                <button onClick={toggleTheme} className="theme-toggle-btn">
-                  {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
+              <li className="nav-item">
+                <Link to="/" className="nav-links" onClick={closeMenu}>Home</Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/dashboard" className="nav-links" onClick={closeMenu}>Dashboard</Link>
+              </li>
+              <li className="nav-item">
+                <Link to="/jobs" className="nav-links" onClick={closeMenu}>Job Offers</Link>
+              </li>
+
+              {/* Profile Icon + Dropdown */}
+              <li className="nav-item nav-profile-item" ref={dropdownRef}>
+                <button
+                  className="nav-profile-btn"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                  aria-label="Profile menu"
+                  id="nav-profile-btn"
+                >
+                  <div className="nav-avatar">
+                    {user?.photo ? (
+                      <img src={user.photo} alt="Profile" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                    ) : (
+                      getInitials() || <FaUser size={14} />
+                    )}
+                  </div>
                 </button>
-              </li>
-              <li className="nav-item">
-                <Link to="/login" className="nav-links nav-links-btn" onClick={closeMenu}>
-                  Login
-                </Link>
-              </li>
-              <li className="nav-item">
-                <Link to="/signup" className="nav-links nav-links-btn" onClick={closeMenu}>
-                  Signup
-                </Link>
+
+                {/* Dropdown */}
+                {dropdownOpen && (
+                  <div className="nav-dropdown">
+                    {/* User info header */}
+                    <div className="nav-dropdown-header">
+                      <div className="nav-dropdown-avatar">
+                        {user?.photo ? (
+                          <img src={user.photo} alt="Profile" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                        ) : (
+                          getInitials() || <FaUser size={16} />
+                        )}
+                      </div>
+                      <div className="nav-dropdown-user-info">
+                        <span className="nav-dropdown-name">
+                          {user?.name || user?.username || 'User'}
+                        </span>
+                        <span className="nav-dropdown-email">
+                          {user?.email || ''}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="nav-dropdown-divider" />
+
+                    {/* Profile link */}
+                    <Link
+                      to="/profile"
+                      className="nav-dropdown-item"
+                      onClick={() => { setDropdownOpen(false); closeMenu(); }}
+                      id="nav-dropdown-profile"
+                    >
+                      <FaUser size={13} />
+                      <span>Profile</span>
+                    </Link>
+
+                    {/* Theme toggle */}
+                    <button
+                      className="nav-dropdown-item"
+                      onClick={() => { toggleTheme(); }}
+                      id="nav-dropdown-theme"
+                    >
+                      {theme === 'light' ? <FaMoon size={13} /> : <FaSun size={13} />}
+                      <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+                    </button>
+
+                    <div className="nav-dropdown-divider" />
+
+                    {/* Logout */}
+                    <button
+                      className="nav-dropdown-item nav-dropdown-item--danger"
+                      onClick={handleLogout}
+                      id="nav-dropdown-logout"
+                    >
+                      <FaSignOutAlt size={13} />
+                      <span>Sign Out</span>
+                    </button>
+                  </div>
+                )}
               </li>
             </>
+          ) : (
+            <li className="nav-item">
+              <Link to="/login" className="nav-links nav-links-btn" onClick={closeMenu}>
+                Login
+              </Link>
+            </li>
           )}
         </ul>
 

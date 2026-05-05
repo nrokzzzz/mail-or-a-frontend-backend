@@ -9,7 +9,7 @@ exports.classifyEmail = async (subject, body) => {
       generationConfig: { responseMimeType: "application/json" },
     });
 
-    const today    = new Date().toISOString().split("T")[0];
+    const today = new Date().toISOString().split("T")[0];
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
     const prompt = `

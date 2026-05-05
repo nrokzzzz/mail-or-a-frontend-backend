@@ -1,60 +1,105 @@
 import React, { useState } from "react";
+import { FiInbox, FiBriefcase, FiCode, FiMonitor, FiAward, FiChevronDown, FiChevronUp, FiFilter, FiCheckCircle, FiClock, FiFileText } from "react-icons/fi";
+
+const CATEGORY_ICONS = {
+  "Internship": <FiAward className="menu-icon" />,
+  "Job": <FiBriefcase className="menu-icon" />,
+  "Hackathon": <FiCode className="menu-icon" />,
+  "Workshops": <FiMonitor className="menu-icon" />
+};
 
 const Sidebar = ({ activeFilter, setActiveFilter, subFilter, setSubFilter, isOpen, onClose }) => {
   const [activeMenu, setActiveMenu] = useState(null);
 
   const toggleMenu = (menu) => {
     setActiveMenu(activeMenu === menu ? null : menu);
-    setActiveFilter(menu);
-    setSubFilter("");
+    if (activeFilter !== menu) {
+      setActiveFilter(menu);
+      setSubFilter("");
+    }
   };
 
-  const handleSubFilter = (value) => {
+  const handleSubFilter = (value, e) => {
+    e.stopPropagation();
     setSubFilter(value);
-    onClose(); // close sidebar on mobile after selecting a filter
+    onClose(); 
   };
 
   const handleMainFilter = (filter) => {
     setActiveFilter(filter);
     setSubFilter("");
     setActiveMenu(null);
-    onClose(); // close sidebar on mobile
+    onClose(); 
   };
 
   return (
     <div className={`sidebar ${isOpen ? "open" : ""}`}>
-      {/* Close button — mobile only */}
       <button className="sidebar-close-btn" onClick={onClose}>&#10005;</button>
 
-      <h3 className="filter-title">Filters</h3>
+      <div className="sidebar-header">
+        <FiFilter className="filter-icon" />
+        <h3 className="filter-title">Filters</h3>
+      </div>
 
-      {/* ALL */}
-      <button
-        className={`filter ${activeFilter === "All" ? "active" : ""}`}
-        onClick={() => handleMainFilter("All")}
-      >
-        All
-      </button>
+      <div className="sidebar-nav">
+        {/* ALL */}
+        <button
+          className={`filter-btn ${activeFilter === "All" ? "active" : ""}`}
+          onClick={() => handleMainFilter("All")}
+        >
+          <div className="filter-btn-content">
+            <FiInbox className="menu-icon" />
+            <span>All Inbox</span>
+          </div>
+        </button>
 
-      {/* Categories with submenu */}
-      {["Internship", "Job", "Hackathon", "Workshops"].map((category) => (
-        <div className="menu" key={category}>
-          <button
-            className={`filter ${activeFilter === category ? "active" : ""}`}
-            onClick={() => toggleMenu(category)}
-          >
-            {category}
-          </button>
+        <div className="sidebar-divider"></div>
 
-          {activeMenu === category && (
-            <div className="submenu">
-              <p className="cursor-pointer hover:text-orange-500 active:scale-95 transition-all duration-200" onClick={() => handleSubFilter("registered")}>Registered</p>
-              <p className="cursor-pointer hover:text-orange-500 active:scale-95 transition-all duration-200" onClick={() => handleSubFilter("notregistered")}>Not Registered</p>
-              <p className="cursor-pointer hover:text-orange-500 active:scale-95 transition-all duration-200" onClick={() => handleSubFilter("inprogress")}>In Progress</p>
+        {/* Categories */}
+        {Object.keys(CATEGORY_ICONS).map((category) => (
+          <div className="menu-group" key={category}>
+            <button
+              className={`filter-btn ${activeFilter === category ? "active" : ""}`}
+              onClick={() => toggleMenu(category)}
+            >
+              <div className="filter-btn-content">
+                {CATEGORY_ICONS[category]}
+                <span>{category}</span>
+              </div>
+              <div className="menu-chevron">
+                {activeMenu === category ? <FiChevronUp size={16} /> : <FiChevronDown size={16} />}
+              </div>
+            </button>
+
+            {/* Submenu */}
+            <div className={`submenu-wrapper ${activeMenu === category ? "open" : ""}`}>
+              <div className="submenu">
+                <div 
+                  className={`submenu-item ${subFilter === "notregistered" ? "active" : ""}`} 
+                  onClick={(e) => handleSubFilter("notregistered", e)}
+                >
+                  <FiFileText className="sub-icon" />
+                  <span>Not Registered</span>
+                </div>
+                <div 
+                  className={`submenu-item ${subFilter === "registered" ? "active" : ""}`} 
+                  onClick={(e) => handleSubFilter("registered", e)}
+                >
+                  <FiCheckCircle className="sub-icon" />
+                  <span>Registered</span>
+                </div>
+                <div 
+                  className={`submenu-item ${subFilter === "inprogress" ? "active" : ""}`} 
+                  onClick={(e) => handleSubFilter("inprogress", e)}
+                >
+                  <FiClock className="sub-icon" />
+                  <span>In Progress</span>
+                </div>
+              </div>
             </div>
-          )}
-        </div>
-      ))}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };

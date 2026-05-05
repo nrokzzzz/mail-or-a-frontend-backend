@@ -687,6 +687,20 @@ body.light-theme .connected-mail-icon { background: #fff; border: 1px solid #ddd
 .connected-mail-item:hover .connected-mail-remove { opacity: 0.6; }
 .connected-mail-remove:hover { opacity: 1 !important; color: #ef4743; }
 
+.connected-mail-sync {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+  font-size: 14px;
+  line-height: 1;
+}
+.connected-mail-item:hover .connected-mail-sync { opacity: 0.6; }
+.connected-mail-sync:hover { opacity: 1 !important; }
+.connected-mail-sync:disabled { cursor: wait; opacity: 0.8 !important; animation: profileSpin 1s linear infinite; }
+
 .connected-mail-add {
   display: flex;
   gap: 8px;
@@ -898,9 +912,10 @@ body.light-theme .connected-mail-add input { background: #f9f9f9; border: 1px so
 .mobile-verified-number {
   font-size: 16px;
   font-weight: 600;
-  color: var(--lc-text, #eff1f6);
   letter-spacing: 0.5px;
 }
+body.dark-theme .mobile-verified-number { color: #e5e5e5; }
+body.light-theme .mobile-verified-number { color: #1a1a1a; }
 
 .mobile-verified-badge {
   display: inline-flex;
@@ -914,19 +929,17 @@ body.light-theme .connected-mail-add input { background: #f9f9f9; border: 1px so
 
 .mobile-change-btn {
   background: none;
-  border: 1px solid var(--lc-border, #3e3e3e);
-  color: var(--lc-muted, #8a8a8a);
   padding: 6px 14px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 12px;
+  font-family: inherit;
   transition: all 0.2s ease;
 }
-
-.mobile-change-btn:hover {
-  color: var(--lc-text, #eff1f6);
-  border-color: var(--lc-text, #eff1f6);
-}
+body.dark-theme .mobile-change-btn { border: 1px solid #333; color: #888; }
+body.light-theme .mobile-change-btn { border: 1px solid #ddd; color: #666; }
+body.dark-theme .mobile-change-btn:hover { color: #e5e5e5; border-color: #555; }
+body.light-theme .mobile-change-btn:hover { color: #1a1a1a; border-color: #aaa; }
 
 /* ── Input State ── */
 .mobile-input-box {
@@ -953,14 +966,13 @@ body.light-theme .connected-mail-add input { background: #f9f9f9; border: 1px so
 
 .mobile-otp-sent-text {
   font-size: 13px;
-  color: var(--lc-muted, #8a8a8a);
   text-align: center;
   line-height: 1.5;
 }
-
-.mobile-otp-sent-text strong {
-  color: var(--lc-text, #eff1f6);
-}
+body.dark-theme .mobile-otp-sent-text { color: #888; }
+body.light-theme .mobile-otp-sent-text { color: #666; }
+body.dark-theme .mobile-otp-sent-text strong { color: #e5e5e5; }
+body.light-theme .mobile-otp-sent-text strong { color: #1a1a1a; }
 
 .mobile-otp-inputs {
   display: flex;
@@ -972,20 +984,16 @@ body.light-theme .connected-mail-add input { background: #f9f9f9; border: 1px so
   width: 40px;
   height: 46px;
   border-radius: 8px;
-  border: 1.5px solid var(--lc-border, #3e3e3e);
-  background: var(--lc-input-bg, rgba(255, 255, 255, 0.04));
-  color: var(--lc-text, #eff1f6);
   font-size: 18px;
   font-weight: 700;
   text-align: center;
   outline: none;
+  font-family: inherit;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-
-.mobile-otp-digit:focus {
-  border-color: #ffa116;
-  box-shadow: 0 0 0 2px rgba(255, 161, 22, 0.15);
-}
+body.dark-theme .mobile-otp-digit { background: #1a1a1a; border: 1.5px solid #333; color: #e5e5e5; }
+body.light-theme .mobile-otp-digit { background: #f9f9f9; border: 1.5px solid #ddd; color: #1a1a1a; }
+.mobile-otp-digit:focus { border-color: #ffa116; box-shadow: 0 0 0 2px rgba(255, 161, 22, 0.15); }
 
 .mobile-otp-error {
   color: #ef4743;
@@ -1005,6 +1013,7 @@ body.light-theme .connected-mail-add input { background: #f9f9f9; border: 1px so
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
+  font-family: inherit;
   transition: all 0.2s ease;
   display: flex;
   align-items: center;
@@ -1033,17 +1042,19 @@ body.light-theme .connected-mail-add input { background: #f9f9f9; border: 1px so
 .mobile-back-btn {
   background: none;
   border: none;
-  color: var(--lc-muted, #8a8a8a);
   font-size: 12px;
   cursor: pointer;
   padding: 4px 0;
+  font-family: inherit;
   transition: color 0.2s ease;
 }
+body.dark-theme .mobile-resend-btn,
+body.dark-theme .mobile-back-btn { color: #888; }
+body.light-theme .mobile-resend-btn,
+body.light-theme .mobile-back-btn { color: #666; }
 
 .mobile-resend-btn:hover:not(:disabled),
-.mobile-back-btn:hover {
-  color: #ffa116;
-}
+.mobile-back-btn:hover { color: #ffa116; }
 
 .mobile-resend-btn:disabled {
   opacity: 0.4;

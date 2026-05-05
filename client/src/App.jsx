@@ -6,6 +6,9 @@ import { AuthProvider } from './context/AuthContext';
 import AppLayout from './layouts/AppLayout';
 import AuthLayout from './layouts/AuthLayout';
 
+// Components
+import ProtectedRoute from './components/ProtectedRoute';
+
 // Pages — all imports unchanged
 import Home from './pages/home/Home';
 import Privacy from './pages/home/Privacy';
@@ -45,12 +48,12 @@ function App() {
               <Route path="/privacy-policy" element={<Privacy />} />
               <Route path="/terms"          element={<Terms />} />
 
-              {/* App routes — accessible to all; API handles auth on the backend */}
-              <Route path="/dashboard"               element={<Dashboard />} />
-              <Route path="/jobs"                    element={<JobsTable />} />
-              <Route path="/profile"                 element={<UpdateProfile />} />
-              <Route path="/update-profile"          element={<UpdateProfile />} />
-              <Route path="/profile/change-password" element={<ProfileChangePassword />} />
+              {/* Protected routes — redirect to /login if not authenticated */}
+              <Route path="/dashboard"               element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/jobs"                    element={<ProtectedRoute><JobsTable /></ProtectedRoute>} />
+              <Route path="/profile"                 element={<ProtectedRoute><UpdateProfile /></ProtectedRoute>} />
+              <Route path="/update-profile"          element={<ProtectedRoute><UpdateProfile /></ProtectedRoute>} />
+              <Route path="/profile/change-password" element={<ProtectedRoute><ProfileChangePassword /></ProtectedRoute>} />
             </Route>
 
             {/* Auth Layout (Login/Signup flow) */}

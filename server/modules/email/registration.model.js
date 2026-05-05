@@ -32,6 +32,8 @@ const registrationSchema = new mongoose.Schema(
     from:    String,
     snippet: String,
     body:    String,
+    matter:  String, // newly added
+    links:   [String], // newly added
 
     receivedAt: Date,
 

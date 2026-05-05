@@ -390,15 +390,14 @@ exports.sendMobileOtp = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    // Check if this number is already verified by another user
+    // Check if this number is already used by another account
     const rawNumber = mobileNumber.replace(/[\s\-\(\)]/g, "");
     const existingUser = await User.findOne({
       mobileNumber: rawNumber,
-      isMobileVerified: true,
       _id: { $ne: req.user._id }
     });
     if (existingUser) {
-      return res.status(400).json({ message: "This mobile number is already verified by another account." });
+      return res.status(400).json({ message: "This mobile number is already linked to another account." });
     }
 
     // Generate 6-digit OTP
@@ -410,7 +409,14 @@ exports.sendMobileOtp = async (req, res) => {
     user.countryCode = countryCode;
     user.mobileNumber = rawNumber;
     user.isMobileVerified = false;
-    await user.save();
+    try {
+      await user.save();
+    } catch (saveErr) {
+      if (saveErr.code === 11000) {
+        return res.status(400).json({ message: "This mobile number is already linked to another account." });
+      }
+      throw saveErr;
+    }
 
     // Send OTP via WhatsApp microservice
     const whatsappUrl = process.env.WHATSAPP_SERVICE_URL || "http://localhost:3000";
