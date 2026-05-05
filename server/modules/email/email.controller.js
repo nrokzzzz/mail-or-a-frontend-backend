@@ -2,6 +2,7 @@ const RegistrationEmail = require("./registration.model");
 const RegisteredEmail   = require("./registered.model");
 const InProgressEmail   = require("./inprogress.model");
 const ConfirmedEmail    = require("./confirmed.model");
+const Reminder          = require("../remainder/reminder.model");
 const { decrypt }       = require("../../utils/crypto");
 
 const MODELS = [
@@ -83,6 +84,35 @@ exports.getConfirmedEmails = async (req, res) => {
     const emails = await ConfirmedEmail.find({ userId: req.user._id }).sort({ receivedAt: -1 });
     res.json(emails.map((e) => decryptEmail(e, "confirmed")));
   } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// DELETE /api/emails/:type/:id — delete a single email and its pending reminders
+exports.deleteEmail = async (req, res) => {
+  try {
+    const { type, id } = req.params;
+
+    const modelEntry = MODELS.find((m) => m.type === type);
+    if (!modelEntry) {
+      return res.status(400).json({ message: `Invalid email type: ${type}` });
+    }
+
+    // Only allow deleting own emails
+    const email = await modelEntry.model.findOne({ _id: id, userId: req.user._id });
+    if (!email) {
+      return res.status(404).json({ message: "Email not found" });
+    }
+
+    // Delete the email
+    await modelEntry.model.deleteOne({ _id: id });
+
+    // Also cancel any pending reminders linked to this email
+    await Reminder.deleteMany({ emailId: id, status: "pending" });
+
+    res.json({ success: true, message: "Email deleted successfully" });
+  } catch (err) {
+    console.error("Error deleting email:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

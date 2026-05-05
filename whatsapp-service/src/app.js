@@ -1,8 +1,15 @@
 const express = require("express");
+const cors = require("cors");
 const messageRoutes = require("./routes/messageRoutes");
 
 // ─── Express App Setup ──────────────────────────────────────────────────────
 const app = express();
+
+// CORS — only allow the main backend server to call this service
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",")
+  : ["https://server.mail-or-a.dev"];
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
 // Parse JSON request bodies
 app.use(express.json());

@@ -42,7 +42,7 @@ exports.googleAuth = async (req, res) => {
  * Step 2: Handle callback
  */
 exports.googleCallback = async (req, res) => {
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const frontendUrl = process.env.FRONTEND_URL || "https://mail-or-a.dev";
   try {
     const { code, state } = req.query;
 

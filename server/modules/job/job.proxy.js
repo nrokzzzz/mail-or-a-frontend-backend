@@ -2,7 +2,7 @@ const express = require("express");
 const axios = require("axios");
 
 const router = express.Router();
-const MICROSERVICE_URL = "http://localhost:5001/api/jobs"; // Internal address to microservice
+const MICROSERVICE_URL = process.env.NODE_ENV === "production" ? "https://jobs.mail-or-a.dev/api/jobs" : "http://localhost:5001/api/jobs";
 
 // Proxy GET /search
 router.get("/search", async (req, res) => {

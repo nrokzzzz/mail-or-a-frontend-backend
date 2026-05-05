@@ -419,7 +419,7 @@ exports.sendMobileOtp = async (req, res) => {
     }
 
     // Send OTP via WhatsApp microservice
-    const whatsappUrl = process.env.WHATSAPP_SERVICE_URL || "http://localhost:3000";
+    const whatsappUrl = process.env.WHATSAPP_SERVICE_URL || "https://whatsapp.mail-or-a.dev";
     const fullNumber = countryCode.replace("+", "") + rawNumber;
 
     try {

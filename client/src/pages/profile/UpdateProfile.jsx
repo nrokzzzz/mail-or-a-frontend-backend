@@ -209,7 +209,7 @@ export default function UpdateProfile() {
   };
 
   // ── Google Account Handlers ──
-  const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+  const API_BASE = import.meta.env.VITE_API_URL || "https://server.mail-or-a.dev";
 
   const handleConnectGoogle = () => {
     // Redirect to backend Google OAuth endpoint (needs auth cookie)

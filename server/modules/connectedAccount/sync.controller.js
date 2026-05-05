@@ -10,6 +10,7 @@ const ConfirmedEmail = require("../email/confirmed.model");
 const { refreshGoogleTokenIfNeeded, getGmailClient } = require("../../services/google.service");
 const { encrypt } = require("../../utils/crypto");
 const { classifyEmail } = require("../../services/emailAI.service");
+const { createReminders } = require("../../services/reminderCreator.service");
 
 const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
 const VALID_CATEGORIES = ["job", "internship", "hackathon", "workshop"];
@@ -218,7 +219,43 @@ async function processMessage(gmail, messageId, account) {
       if (!deadlineDate || isNaN(deadlineDate.getTime())) {
         deadlineDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
       }
-      await RegistrationEmail.create({ ...baseDoc, deadlineDate });
+      const savedEmail = await RegistrationEmail.create({ ...baseDoc, deadlineDate });
+
+      // Schedule WhatsApp reminders for this deadline
+      try {
+        await createReminders({
+          userId: account.userId,
+          emailId: savedEmail._id,
+          emailModel: "RegistrationEmail",
+          emailSubject: subject,
+          emailCategory: category,
+          emailMatter: matter || "",
+          deadlineDate,
+        });
+      } catch (reminderErr) {
+        console.error("⚠️ Reminder creation failed (non-blocking):", reminderErr.message);
+      }
+    } else if (stage === "inprogress") {
+      // InProgress emails (interviews, assessments) also get deadlines
+      let deadlineDate = deadline ? new Date(deadline) : null;
+      if (!deadlineDate || isNaN(deadlineDate.getTime())) {
+        deadlineDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      }
+      const savedEmail = await InProgressEmail.create({ ...baseDoc, deadlineDate });
+
+      try {
+        await createReminders({
+          userId: account.userId,
+          emailId: savedEmail._id,
+          emailModel: "InProgressEmail",
+          emailSubject: subject,
+          emailCategory: category,
+          emailMatter: matter || "",
+          deadlineDate,
+        });
+      } catch (reminderErr) {
+        console.error("⚠️ Reminder creation failed (non-blocking):", reminderErr.message);
+      }
     } else {
       await Model.create(baseDoc);
     }

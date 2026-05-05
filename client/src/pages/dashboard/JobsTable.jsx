@@ -17,7 +17,7 @@ function JobsTable() {
 
   // Fetch Roles for dropdown
   useEffect(() => {
-    fetch("http://localhost:5000/api/jobs/roles")
+    fetch("https://server.mail-or-a.dev/api/jobs/roles")
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -30,7 +30,7 @@ function JobsTable() {
   // Fetch Jobs whenever page, selectedRole, or selectedType changes
   useEffect(() => {
     setLoading(true);
-    let url = `http://localhost:5000/api/jobs/search?page=${page}&limit=${limit}`;
+    let url = `https://server.mail-or-a.dev/api/jobs/search?page=${page}&limit=${limit}`;
     if (selectedRole) {
       url += `&role=${encodeURIComponent(selectedRole)}`;
     }

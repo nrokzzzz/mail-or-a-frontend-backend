@@ -43,6 +43,8 @@ const inProgressSchema = new mongoose.Schema(
       required: true,
     },
 
+    deadlineDate: Date,
+
     aiProcessed: {
       type: Boolean,
       default: false,

@@ -16,7 +16,7 @@ import axiosClient from "../../helpers/axiosClient";
 import { useAuth } from "../../context/AuthContext";
 import "../../styles/auth.css";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL || "https://server.mail-or-a.dev";
 
 const Login = () => {
   const [identifier, setIdentifier] = useState("");

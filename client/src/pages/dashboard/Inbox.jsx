@@ -5,6 +5,7 @@ const Inbox = ({ selectedFilter, selectedSubFilter }) => {
   const [mails, setMails] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMail, setSelectedMail] = useState(null);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     const fetchEmails = async () => {
@@ -21,6 +22,28 @@ const Inbox = ({ selectedFilter, selectedSubFilter }) => {
 
     fetchEmails();
   }, []);
+
+  // Delete handler
+  const handleDelete = async (mail, e) => {
+    if (e) e.stopPropagation(); // prevent card click from opening modal
+    if (!confirm(`Delete "${mail.subject || "(No Subject)"}"?\nThis will also cancel any pending WhatsApp reminders for this email.`)) return;
+
+    setDeletingId(mail._id);
+    try {
+      await axiosClient.delete(`/api/emails/${mail.type}/${mail._id}`);
+      // Optimistically remove from state
+      setMails((prev) => prev.filter((m) => m._id !== mail._id));
+      // Close modal if this mail was open
+      if (selectedMail && selectedMail._id === mail._id) {
+        setSelectedMail(null);
+      }
+    } catch (err) {
+      console.error("Failed to delete email:", err);
+      alert("Failed to delete email. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   // Filter logic
   let filtered = mails;
@@ -76,18 +99,42 @@ const Inbox = ({ selectedFilter, selectedSubFilter }) => {
                 borderRadius: '8px',
                 cursor: 'pointer',
                 transition: 'transform 0.2s, box-shadow 0.2s',
-                boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
+                opacity: deletingId === mail._id ? 0.5 : 1,
+                position: 'relative'
               }}
               onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 4px 8px rgba(0,0,0,0.06)'; }}
               onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 4px rgba(0,0,0,0.02)'; }}
             >
               <div className="mail-item-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '6px' }}>
-                 <h3 className="mail-name" style={{ fontWeight: '600', fontSize: '1.05em', margin: 0, color: 'var(--text-primary)', paddingRight: '12px', lineHeight: '1.3' }}>
+                 <h3 className="mail-name" style={{ fontWeight: '600', fontSize: '1.05em', margin: 0, color: 'var(--text-primary)', paddingRight: '12px', lineHeight: '1.3', flex: 1 }}>
                    {mail.subject || "(No Subject)"}
                  </h3>
-                 <span className="mail-date" style={{ fontSize: '0.8em', color: 'var(--text-secondary)', whiteSpace: 'nowrap', fontWeight: '500' }}>
-                   {new Date(mail.receivedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
-                 </span>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                   <span className="mail-date" style={{ fontSize: '0.8em', color: 'var(--text-secondary)', whiteSpace: 'nowrap', fontWeight: '500' }}>
+                     {new Date(mail.receivedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                   </span>
+                   <button
+                     onClick={(e) => handleDelete(mail, e)}
+                     disabled={deletingId === mail._id}
+                     title="Delete email"
+                     style={{
+                       background: 'none',
+                       border: 'none',
+                       cursor: deletingId === mail._id ? 'wait' : 'pointer',
+                       padding: '4px',
+                       borderRadius: '4px',
+                       fontSize: '1.1em',
+                       color: 'var(--text-secondary, #999)',
+                       transition: 'color 0.2s, background 0.2s',
+                       lineHeight: 1
+                     }}
+                     onMouseEnter={(e) => { e.currentTarget.style.color = '#e53e3e'; e.currentTarget.style.background = 'rgba(229,62,62,0.08)'; }}
+                     onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-secondary, #999)'; e.currentTarget.style.background = 'none'; }}
+                   >
+                     🗑️
+                   </button>
+                 </div>
               </div>
               
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
@@ -176,9 +223,32 @@ const Inbox = ({ selectedFilter, selectedSubFilter }) => {
               </details>
             </div>
 
-            <button className="close-btn" onClick={() => setSelectedMail(null)} style={{ marginTop: '20px', width: '100%' }}>
-              Close
-            </button>
+            {/* Action Buttons */}
+            <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+              <button 
+                onClick={() => handleDelete(selectedMail)} 
+                disabled={deletingId === selectedMail._id}
+                style={{ 
+                  flex: 1, 
+                  padding: '10px', 
+                  border: '1px solid #e53e3e', 
+                  background: 'transparent', 
+                  color: '#e53e3e', 
+                  borderRadius: '6px', 
+                  cursor: 'pointer', 
+                  fontWeight: '600',
+                  fontSize: '0.9em',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#e53e3e'; e.currentTarget.style.color = '#fff'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#e53e3e'; }}
+              >
+                {deletingId === selectedMail._id ? "Deleting..." : "🗑️ Delete"}
+              </button>
+              <button className="close-btn" onClick={() => setSelectedMail(null)} style={{ flex: 1 }}>
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -187,3 +257,4 @@ const Inbox = ({ selectedFilter, selectedSubFilter }) => {
 };
 
 export default Inbox;
+

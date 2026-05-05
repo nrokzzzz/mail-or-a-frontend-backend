@@ -15,7 +15,7 @@ import { FcGoogle } from "react-icons/fc";
 import axiosClient from "../../helpers/axiosClient";
 import "../../styles/auth.css";
 
-const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+const API_BASE = import.meta.env.VITE_API_URL || "https://server.mail-or-a.dev";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
