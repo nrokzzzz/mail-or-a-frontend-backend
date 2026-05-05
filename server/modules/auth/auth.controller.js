@@ -4,6 +4,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { sendSignupOtpEmail, sendResetPasswordEmail, sendChangePasswordEmail } = require("../../services/otp.email.service");
+const { getPresignedUrl } = require("../../services/s3.service");
 const { encrypt, decrypt } = require("../../utils/crypto");
 
 // ─── Step 1: Send Signup OTP ──────────────────────────────────────────────────
@@ -54,10 +55,10 @@ exports.sendSignupOtp = async (req, res) => {
 // User is only created in DB if OTP is valid
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password, otp } = req.body;
+    const { name, email, password, countryCode, mobileNumber, otp } = req.body;
 
-    if (!name || !email || !password || !otp) {
-      return res.status(400).json({ message: "Name, email, password and OTP are required." });
+    if (!name || !email || !password || !mobileNumber || !otp) {
+      return res.status(400).json({ message: "Name, email, mobile number, password and OTP are required." });
     }
 
     if (password.length < 6) {
@@ -93,7 +94,7 @@ exports.signup = async (req, res) => {
 
     // Create user only after OTP verified
     const hashed = await bcrypt.hash(password, 10);
-    const user   = await User.create({ name, email, password: hashed });
+    const user   = await User.create({ name, email, countryCode, mobileNumber, password: hashed });
 
     // Clean up pending record
     await PendingVerification.deleteOne({ email });
@@ -153,6 +154,8 @@ exports.login = async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    const photoUrl = user.photoS3Key ? await getPresignedUrl(user.photoS3Key) : user.photoUrl || "";
+
     res.json({
       message: "Login successful",
       token,
@@ -160,6 +163,7 @@ exports.login = async (req, res) => {
         _id: user._id,
         name: user.name,
         email: user.email,
+        photo: photoUrl,
       },
     });
   } catch (error) {
@@ -192,17 +196,15 @@ exports.forgotPassword = async (req, res) => {
     const hashedOtp = await bcrypt.hash(otp, 10);
 
     user.passwordResetOtp = hashedOtp;
-    user.passwordResetOtpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+    user.passwordResetOtpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 min
     await user.save();
 
     // Encrypt email for URL — hides plain email in the link
     const encryptedEmail = encodeURIComponent(encrypt(email));
 
-    const resetLink  = `${process.env.FRONTEND_URL}/reset-password?otp=${otp}&email=${encryptedEmail}`;
-    const changeLink = `${process.env.FRONTEND_URL}/change-password?otp=${otp}&email=${encryptedEmail}`;
+    const resetLink  = `${process.env.FRONTEND_URL}/change-password?otp=${otp}&email=${encryptedEmail}`;
 
     await sendResetPasswordEmail(user.email, resetLink);
-    await sendChangePasswordEmail(user.email, changeLink);
 
     res.json({ message: "If this email exists, a reset link has been sent." });
   } catch (error) {

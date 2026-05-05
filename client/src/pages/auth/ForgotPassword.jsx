@@ -23,20 +23,17 @@ export default function ForgotPassword() {
 
     setLoading(true);
     try {
-      const response = await axiosClient.post("/auth/send-otp", { email });
+      const response = await axiosClient.post("/api/auth/forgot-password", { email });
       const res = response.data;
 
       setLoading(false);
-
-      if (res.success) {
-        toast.success("OTP sent to your email");
-        setTimeout(() => navigate("/otp", { state: { email } }), 1200);
-      } else {
-        setMsg("Email not found");
-      }
+      setMsg(""); // clear error
+      toast.success(res.message || "Reset link sent to your email!");
+      
+      // Do not navigate to /otp, just tell them to check their email.
     } catch (err) {
       setLoading(false);
-      setMsg("Something went wrong. Please try again.");
+      setMsg(err.response?.data?.message || "Something went wrong. Please try again.");
     }
   };
 

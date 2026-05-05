@@ -92,6 +92,15 @@ export const profileService = {
     }
   },
 
+  sendPasswordResetLink: async (email) => {
+    try {
+      const response = await axiosClient.post('/api/auth/forgot-password', { email });
+      return { success: true, message: response.data.message };
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to send reset link");
+    }
+  },
+
   uploadPhoto: async (file) => {
     try {
       const formData = new FormData();

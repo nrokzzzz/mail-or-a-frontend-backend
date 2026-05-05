@@ -3,6 +3,7 @@ import { FiUploadCloud, FiEdit2, FiSave, FiX, FiLink, FiCheckCircle, FiLock, FiE
 import { useScrollAnimation } from "../../hooks/useScrollAnimation";
 import * as pdfjsLib from 'pdfjs-dist';
 import { profileService } from "../../services/profileService";
+import CountryCodeSelect from "../../components/CountryCodeSelect";
 import "./UpdateProfile.css";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -15,20 +16,24 @@ export default function UpdateProfile() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Auto-filled uneditable details
   const [basicInfo, setBasicInfo] = useState({
-    firstName: "",
-    lastName: "",
+    name: "",
     email: "",
+    countryCode: "+91",
+    mobileNumber: "",
     role: "",
     photo: ""
   });
 
   const [editBasic, setEditBasic] = useState(false);
+  const [editCoding, setEditCoding] = useState(false);
+  const [editSkills, setEditSkills] = useState(false);
+  const [newSkill, setNewSkill] = useState("");
 
   // Resume Upload State
   const [resumeFile, setResumeFile] = useState(null);
   const [resumeLink, setResumeLink] = useState("");
+  const [uploadedResumeUrl, setUploadedResumeUrl] = useState("");
   const [isExtracting, setIsExtracting] = useState(false);
   const fileInputRef = useRef(null);
   const photoInputRef = useRef(null);
@@ -54,6 +59,7 @@ export default function UpdateProfile() {
         if (response.success) {
           setBasicInfo(response.data.basicInfo);
           setProfileData(response.data.profileData);
+          if (response.data.resumeUrl) setUploadedResumeUrl(response.data.resumeUrl);
         }
       } catch (error) {
         console.error("Failed to fetch profile", error);
@@ -93,15 +99,26 @@ export default function UpdateProfile() {
     try {
       const response = await profileService.uploadResume(resumeFile);
       if (response.success) {
+        const pData = response.data.profileData || {};
         setProfileData(prev => ({
           ...prev,
-          skills: response.data.skills || prev.skills
+          skills: pData.skills?.length ? pData.skills : prev.skills,
+          about: pData.about || prev.about,
+          experience: pData.experience?.length ? pData.experience : prev.experience,
+          education: pData.education?.length ? pData.education : prev.education,
+          projects: pData.projects?.length ? pData.projects : prev.projects,
+          certifications: pData.certifications?.length ? pData.certifications : prev.certifications,
+          achievements: pData.achievements || prev.achievements,
         }));
-        if (response.data.role) {
-          setBasicInfo(prev => ({ ...prev, role: response.data.role }));
+        if (response.data.basicInfo?.role) {
+          setBasicInfo(prev => ({ ...prev, role: response.data.basicInfo.role }));
+        }
+        if (response.data.resumeUrl) {
+          setUploadedResumeUrl(response.data.resumeUrl);
         }
         setCompletionProgress(90);
-        alert(`Resume uploaded! Found ${response.data.extractedSkills?.length || 0} skills.`);
+        alert(`Resume uploaded! Profile sections have been auto-filled.`);
+        setResumeFile(null); // clear file input
       }
     } catch (error) {
       console.error("Extraction error:", error);
@@ -189,37 +206,78 @@ export default function UpdateProfile() {
           }}>
             <div className="basic-info-layout">
               <div className="profile-photo-wrapper">
-                <img src={basicInfo.photo || "https://ui-avatars.com/api/?name=" + encodeURIComponent(basicInfo.firstName + " " + basicInfo.lastName)} alt="Profile" className="profile-photo" />
+                <img src={basicInfo.photo || "https://ui-avatars.com/api/?name=" + encodeURIComponent(basicInfo.name || "User")} alt="Profile" className="profile-photo" />
                 {editBasic && (
-                  <div className="profile-photo-overlay" onClick={() => photoInputRef.current?.click()}>
+                  <div className="profile-photo-overlay" onClick={() => photoInputRef.current?.click()} title="Change Photo">
                     <FiUploadCloud size={20} />
+                    <span className="photo-overlay-text">Change Photo</span>
                   </div>
                 )}
                 <input type="file" hidden ref={photoInputRef} accept="image/jpeg, image/png, image/webp" onChange={handlePhotoUpload} />
               </div>
               <div className="basic-info-fields">
-                <Input label="First Name" value={basicInfo.firstName} editable={editBasic} onChange={(e) => setBasicInfo({...basicInfo, firstName: e.target.value})} />
-                <Input label="Last Name" value={basicInfo.lastName} editable={editBasic} onChange={(e) => setBasicInfo({...basicInfo, lastName: e.target.value})} />
-                <Input label="Email Address" value={basicInfo.email} editable={editBasic} type="email" onChange={(e) => setBasicInfo({...basicInfo, email: e.target.value})} />
+                <Input label="Full Name" value={basicInfo.name} editable={editBasic} onChange={(e) => setBasicInfo({...basicInfo, name: e.target.value})} />
+                <Input label="Email Address" value={basicInfo.email} editable={false} type="email" onChange={(e) => setBasicInfo({...basicInfo, email: e.target.value})} />
+                
+                <div className="profile-input-group">
+                  <label className="profile-input-label">Mobile Number</label>
+                  <div style={{ display: 'flex', gap: '8px', height: '42px' }}>
+                    <CountryCodeSelect 
+                      disabled={!editBasic}
+                      value={basicInfo.countryCode || "+91"} 
+                      onChange={(code) => setBasicInfo({...basicInfo, countryCode: code})} 
+                    />
+                    <input 
+                      type="tel" 
+                      className="profile-text-input" 
+                      value={basicInfo.mobileNumber || ""} 
+                      disabled={!editBasic} 
+                      onChange={(e) => setBasicInfo({...basicInfo, mobileNumber: e.target.value})} 
+                      placeholder="e.g. 1234567890"
+                      style={{ flex: 1, height: '100%' }}
+                    />
+                  </div>
+                </div>
+
                 <Input label="Current Role" value={basicInfo.role} editable={editBasic} onChange={(e) => setBasicInfo({...basicInfo, role: e.target.value})} />
               </div>
             </div>
           </Card>
 
           {/* About / Bio */}
-          <SectionCard title="About / Bio" section="about" value={profileData.about} onChange={(v) => setProfileData({...profileData, about: v})} type="textarea" />
+          <SectionCard title="About / Bio" section="about" value={profileData.about} onChange={(v) => setProfileData({...profileData, about: v})} onSave={(v) => saveSection('about', v)} type="textarea" />
 
           {/* Experience */}
           <ListSectionCard 
             title="Experience / Internships" 
             items={profileData.experience} 
-            onAdd={() => setProfileData({...profileData, experience: [...profileData.experience, { id: Date.now(), role: "New Role", company: "Company", duration: "Duration" }]})}
-            onDelete={(id) => setProfileData({...profileData, experience: profileData.experience.filter(exp => exp.id !== id)})}
+            onAdd={(newId) => {
+              const newData = [...profileData.experience, { id: newId, role: "", company: "", duration: "", description: "" }];
+              setProfileData({...profileData, experience: newData});
+            }}
+            onDelete={(id) => {
+              const newData = profileData.experience.filter(exp => exp.id !== id);
+              setProfileData({...profileData, experience: newData});
+              saveSection('experience', newData);
+            }}
+            onUpdate={(updatedItem) => {
+              const newData = profileData.experience.map(exp => exp.id === updatedItem.id ? updatedItem : exp);
+              setProfileData({...profileData, experience: newData});
+              saveSection('experience', newData);
+            }}
             renderItem={(item) => (
               <div>
-                <h4 className="list-item-title">{item.role}</h4>
-                <p className="list-item-meta">{item.company} &bull; <span>{item.duration}</span></p>
+                <h4 className="list-item-title">{item.role || "Untitled Role"}</h4>
+                <p className="list-item-meta">{item.company || "No Company"} &bull; <span>{item.duration || "No Duration"}</span></p>
                 {item.description && <p className="list-item-desc">{item.description}</p>}
+              </div>
+            )}
+            renderEdit={(item, setItem) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <input type="text" placeholder="Role (e.g. Software Engineer)" value={item.role} onChange={(e) => setItem({...item, role: e.target.value})} className="profile-text-input" />
+                <input type="text" placeholder="Company Name" value={item.company} onChange={(e) => setItem({...item, company: e.target.value})} className="profile-text-input" />
+                <input type="text" placeholder="Duration (e.g. Jan 2022 - Present)" value={item.duration} onChange={(e) => setItem({...item, duration: e.target.value})} className="profile-text-input" />
+                <textarea placeholder="Description" value={item.description} onChange={(e) => setItem({...item, description: e.target.value})} className="profile-textarea" style={{ minHeight: '60px' }} />
               </div>
             )}
           />
@@ -228,12 +286,31 @@ export default function UpdateProfile() {
           <ListSectionCard 
             title="Education" 
             items={profileData.education} 
-            onAdd={() => setProfileData({...profileData, education: [...profileData.education, { id: Date.now(), degree: "Degree", institution: "Institution", year: "Year" }]})}
-            onDelete={(id) => setProfileData({...profileData, education: profileData.education.filter(edu => edu.id !== id)})}
+            onAdd={(newId) => {
+              const newData = [...profileData.education, { id: newId, degree: "", institution: "", year: "" }];
+              setProfileData({...profileData, education: newData});
+            }}
+            onDelete={(id) => {
+              const newData = profileData.education.filter(edu => edu.id !== id);
+              setProfileData({...profileData, education: newData});
+              saveSection('education', newData);
+            }}
+            onUpdate={(updatedItem) => {
+              const newData = profileData.education.map(edu => edu.id === updatedItem.id ? updatedItem : edu);
+              setProfileData({...profileData, education: newData});
+              saveSection('education', newData);
+            }}
             renderItem={(item) => (
               <div>
-                <h4 className="list-item-title">{item.degree}</h4>
-                <p className="list-item-meta">{item.institution} &bull; <span>{item.year}</span></p>
+                <h4 className="list-item-title">{item.degree || "Untitled Degree"}</h4>
+                <p className="list-item-meta">{item.institution || "No Institution"} &bull; <span>{item.year || "No Year"}</span></p>
+              </div>
+            )}
+            renderEdit={(item, setItem) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <input type="text" placeholder="Degree (e.g. B.S. Computer Science)" value={item.degree} onChange={(e) => setItem({...item, degree: e.target.value})} className="profile-text-input" />
+                <input type="text" placeholder="Institution" value={item.institution} onChange={(e) => setItem({...item, institution: e.target.value})} className="profile-text-input" />
+                <input type="text" placeholder="Year (e.g. 2020 - 2024)" value={item.year} onChange={(e) => setItem({...item, year: e.target.value})} className="profile-text-input" />
               </div>
             )}
           />
@@ -242,28 +319,64 @@ export default function UpdateProfile() {
           <ListSectionCard 
             title="Projects" 
             items={profileData.projects} 
-            onAdd={() => setProfileData({...profileData, projects: [...profileData.projects, { id: Date.now(), title: "Project Title", description: "Description here" }]})}
-            onDelete={(id) => setProfileData({...profileData, projects: profileData.projects.filter(proj => proj.id !== id)})}
+            onAdd={(newId) => {
+              const newData = [...profileData.projects, { id: newId, title: "", description: "" }];
+              setProfileData({...profileData, projects: newData});
+            }}
+            onDelete={(id) => {
+              const newData = profileData.projects.filter(proj => proj.id !== id);
+              setProfileData({...profileData, projects: newData});
+              saveSection('projects', newData);
+            }}
+            onUpdate={(updatedItem) => {
+              const newData = profileData.projects.map(proj => proj.id === updatedItem.id ? updatedItem : proj);
+              setProfileData({...profileData, projects: newData});
+              saveSection('projects', newData);
+            }}
             renderItem={(item) => (
               <div>
-                <h4 className="list-item-title">{item.title}</h4>
+                <h4 className="list-item-title">{item.title || "Untitled Project"}</h4>
                 <p className="list-item-desc">{item.description}</p>
+              </div>
+            )}
+            renderEdit={(item, setItem) => (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                <input type="text" placeholder="Project Title" value={item.title} onChange={(e) => setItem({...item, title: e.target.value})} className="profile-text-input" />
+                <textarea placeholder="Description" value={item.description} onChange={(e) => setItem({...item, description: e.target.value})} className="profile-textarea" style={{ minHeight: '60px' }} />
               </div>
             )}
           />
 
           {/* Certifications & Achievements */}
           <div className="profile-two-col">
-             <SectionCard title="Achievements" section="achievements" value={profileData.achievements} onChange={(v) => setProfileData({...profileData, achievements: v})} type="textarea" />
+             <SectionCard title="Achievements" section="achievements" value={profileData.achievements} onChange={(v) => setProfileData({...profileData, achievements: v})} onSave={(v) => saveSection('achievements', v)} type="textarea" />
              <ListSectionCard 
                 title="Certifications" 
                 items={profileData.certifications} 
-                onAdd={() => setProfileData({...profileData, certifications: [...profileData.certifications, { id: Date.now(), name: "Cert Name", issuer: "Issuer" }]})}
-                onDelete={(id) => setProfileData({...profileData, certifications: profileData.certifications.filter(cert => cert.id !== id)})}
+                onAdd={(newId) => {
+                  const newData = [...profileData.certifications, { id: newId, name: "", issuer: "" }];
+                  setProfileData({...profileData, certifications: newData});
+                }}
+                onDelete={(id) => {
+                  const newData = profileData.certifications.filter(cert => cert.id !== id);
+                  setProfileData({...profileData, certifications: newData});
+                  saveSection('certifications', newData);
+                }}
+                onUpdate={(updatedItem) => {
+                  const newData = profileData.certifications.map(cert => cert.id === updatedItem.id ? updatedItem : cert);
+                  setProfileData({...profileData, certifications: newData});
+                  saveSection('certifications', newData);
+                }}
                 renderItem={(item) => (
                   <div>
-                    <h4 className="list-item-title" style={{ fontSize: '13px' }}>{item.name}</h4>
+                    <h4 className="list-item-title" style={{ fontSize: '13px' }}>{item.name || "Untitled Certification"}</h4>
                     <p className="list-item-desc" style={{ fontSize: '12px' }}>{item.issuer}</p>
+                  </div>
+                )}
+                renderEdit={(item, setItem) => (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <input type="text" placeholder="Certification Name" value={item.name} onChange={(e) => setItem({...item, name: e.target.value})} className="profile-text-input" />
+                    <input type="text" placeholder="Issuing Organization" value={item.issuer} onChange={(e) => setItem({...item, issuer: e.target.value})} className="profile-text-input" />
                   </div>
                 )}
               />
@@ -285,6 +398,14 @@ export default function UpdateProfile() {
 
             <div className="resume-upload-area">
               {/* File Upload */}
+              {uploadedResumeUrl && (
+                <div className="resume-current-download">
+                  <a href={uploadedResumeUrl} target="_blank" rel="noopener noreferrer" className="resume-download-link">
+                    <FiCheckCircle size={16} /> View/Download Current Resume
+                  </a>
+                </div>
+              )}
+
               <div className="resume-dropzone" onClick={() => fileInputRef.current?.click()}>
                 <input type="file" hidden ref={fileInputRef} onChange={handleResumeUpload} accept=".pdf,.doc,.docx" />
                 {resumeFile ? (
@@ -295,7 +416,7 @@ export default function UpdateProfile() {
                 ) : (
                   <div className="resume-placeholder">
                     <FiUploadCloud size={20} />
-                    <span>Click or drag PDF/DOCX</span>
+                    <span>{uploadedResumeUrl ? "Upload new PDF/DOCX to replace" : "Click or drag PDF/DOCX"}</span>
                   </div>
                 )}
               </div>
@@ -320,29 +441,74 @@ export default function UpdateProfile() {
                 disabled={isExtracting || (!resumeFile && !resumeLink)}
                 className="resume-extract-btn"
               >
-                {isExtracting ? "Extracting Details..." : "Extract & Fill Profile"}
+                {isExtracting ? "Extracting Details..." : (uploadedResumeUrl ? "Update & Refill Profile" : "Extract & Fill Profile")}
               </button>
             </div>
           </div>
 
           {/* Skills */}
-          <Card title="Skills" onEdit={() => {}} isEditing={false}>
+          <Card title="Skills" onEdit={() => setEditSkills(!editSkills)} isEditing={editSkills} onSave={() => {
+            setEditSkills(false);
+            saveSection('skills', profileData.skills);
+          }}>
             <div className="skills-list">
               {profileData.skills.map(skill => (
-                <span key={skill} className="skill-chip">{skill}</span>
+                <span key={skill} className="skill-chip">
+                  {skill}
+                  {editSkills && (
+                    <button 
+                      onClick={() => setProfileData({...profileData, skills: profileData.skills.filter(s => s !== skill)})}
+                      style={{ background: 'none', border: 'none', color: 'inherit', marginLeft: '6px', cursor: 'pointer', padding: 0 }}
+                      title="Remove skill"
+                    >
+                      <FiX size={12} />
+                    </button>
+                  )}
+                </span>
               ))}
-              <button className="skill-add-btn">
-                <FiPlus /> Add
-              </button>
+              {editSkills && (
+                <div style={{ display: 'flex', gap: '4px' }}>
+                  <input 
+                    type="text" 
+                    value={newSkill} 
+                    onChange={(e) => setNewSkill(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && newSkill.trim()) {
+                        if (!profileData.skills.includes(newSkill.trim())) {
+                          setProfileData({...profileData, skills: [...profileData.skills, newSkill.trim()]});
+                        }
+                        setNewSkill("");
+                      }
+                    }}
+                    placeholder="New skill..."
+                    className="profile-text-input"
+                    style={{ padding: '4px 8px', width: '100px' }}
+                  />
+                  <button 
+                    onClick={() => {
+                      if (newSkill.trim() && !profileData.skills.includes(newSkill.trim())) {
+                        setProfileData({...profileData, skills: [...profileData.skills, newSkill.trim()]});
+                        setNewSkill("");
+                      }
+                    }}
+                    className="skill-add-btn"
+                  >
+                    <FiPlus /> Add
+                  </button>
+                </div>
+              )}
             </div>
           </Card>
 
           {/* Coding Profiles */}
-          <Card title="Coding Profiles" onEdit={() => {}} isEditing={false}>
+          <Card title="Coding Profiles" onEdit={() => setEditCoding(!editCoding)} isEditing={editCoding} onSave={() => {
+            setEditCoding(false);
+            saveSection('codingProfiles', profileData.codingProfiles);
+          }}>
             <div className="coding-profiles-list">
-              <Input label="GitHub" value={profileData.codingProfiles.github} editable={false} placeholder="github.com/username" />
-              <Input label="LeetCode" value={profileData.codingProfiles.leetcode} editable={false} placeholder="leetcode.com/username" />
-              <Input label="CodeChef" value={profileData.codingProfiles.codechef} editable={false} placeholder="codechef.com/users/username" />
+              <Input label="GitHub" value={profileData.codingProfiles.github} editable={editCoding} onChange={(e) => setProfileData({...profileData, codingProfiles: {...profileData.codingProfiles, github: e.target.value}})} placeholder="github.com/username" />
+              <Input label="LeetCode" value={profileData.codingProfiles.leetcode} editable={editCoding} onChange={(e) => setProfileData({...profileData, codingProfiles: {...profileData.codingProfiles, leetcode: e.target.value}})} placeholder="leetcode.com/username" />
+              <Input label="CodeChef" value={profileData.codingProfiles.codechef} editable={editCoding} onChange={(e) => setProfileData({...profileData, codingProfiles: {...profileData.codingProfiles, codechef: e.target.value}})} placeholder="codechef.com/users/username" />
             </div>
           </Card>
 
@@ -375,7 +541,11 @@ export default function UpdateProfile() {
                     </div>
                     <span className="connected-mail-address">{mail}</span>
                     <button 
-                      onClick={() => setProfileData({...profileData, connectedMails: profileData.connectedMails.filter((_, i) => i !== idx)})}
+                      onClick={() => {
+                        const newData = profileData.connectedMails.filter((_, i) => i !== idx);
+                        setProfileData({...profileData, connectedMails: newData});
+                        saveSection('connectedMails', newData);
+                      }}
                       className="connected-mail-remove"
                       title="Remove Email"
                     >
@@ -395,7 +565,9 @@ export default function UpdateProfile() {
                       if (e.key === 'Enter') {
                         const val = e.target.value.trim();
                         if (val && val.includes('@')) {
-                          setProfileData({...profileData, connectedMails: [...profileData.connectedMails, val]});
+                          const newData = [...profileData.connectedMails, val];
+                          setProfileData({...profileData, connectedMails: newData});
+                          saveSection('connectedMails', newData);
                           e.target.value = '';
                         }
                       }
@@ -406,7 +578,9 @@ export default function UpdateProfile() {
                       const input = document.getElementById('newEmailInput');
                       const val = input.value.trim();
                       if (val && val.includes('@')) {
-                        setProfileData({...profileData, connectedMails: [...profileData.connectedMails, val]});
+                        const newData = [...profileData.connectedMails, val];
+                        setProfileData({...profileData, connectedMails: newData});
+                        saveSection('connectedMails', newData);
                         input.value = '';
                       }
                     }}
@@ -434,28 +608,24 @@ export default function UpdateProfile() {
             </div>
 
             {pwdEditing && (
-              <div className="pwd-form">
-                <PwdInput label="Current Password" value={passwords.current} onChange={(e) => setPasswords({...passwords, current: e.target.value})} show={showPwd} toggle={() => setShowPwd(!showPwd)} />
-                <PwdInput label="New Password" value={passwords.new} onChange={(e) => setPasswords({...passwords, new: e.target.value})} show={showPwd} toggle={() => setShowPwd(!showPwd)} />
-                <PwdInput label="Confirm New" value={passwords.confirm} onChange={(e) => setPasswords({...passwords, confirm: e.target.value})} show={showPwd} toggle={() => setShowPwd(!showPwd)} />
+              <div className="pwd-form" style={{ display: 'flex', flexDirection: 'column', gap: '16px', alignItems: 'flex-start' }}>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>
+                  Click the button below to receive a secure password reset link at your registered email address ({basicInfo.email}).
+                </p>
                 <button 
                   onClick={async () => {
-                    if (passwords.new !== passwords.confirm) {
-                      alert("New passwords do not match.");
-                      return;
-                    }
                     try {
-                      await profileService.changePassword(passwords);
-                      alert("Password updated");
+                      await profileService.sendPasswordResetLink(basicInfo.email);
+                      alert("Password reset link sent to your email!");
                       setPwdEditing(false);
-                      setPasswords({ current: "", new: "", confirm: "" });
                     } catch (e) {
-                      alert("Failed to update password");
+                      alert(e.message || "Failed to send reset link");
                     }
                   }}
                   className="pwd-submit-btn"
+                  style={{ width: 'auto', padding: '10px 20px', minWidth: '180px' }}
                 >
-                  Update Password
+                  Send Reset Link
                 </button>
               </div>
             )}
@@ -490,10 +660,13 @@ function Card({ title, children, onEdit, isEditing, onSave }) {
   );
 }
 
-function SectionCard({ title, section, value, onChange, type = "text" }) {
+function SectionCard({ title, section, value, onChange, onSave, type = "text" }) {
   const [editing, setEditing] = useState(false);
   return (
-    <Card title={title} isEditing={editing} onEdit={() => setEditing(!editing)} onSave={() => setEditing(false)}>
+    <Card title={title} isEditing={editing} onEdit={() => setEditing(!editing)} onSave={() => {
+      setEditing(false);
+      if (onSave) onSave(value);
+    }}>
       {editing ? (
         type === "textarea" ? (
           <textarea 
@@ -516,13 +689,19 @@ function SectionCard({ title, section, value, onChange, type = "text" }) {
   );
 }
 
-function ListSectionCard({ title, items, onAdd, onDelete, renderItem }) {
+function ListSectionCard({ title, items, onAdd, onDelete, onUpdate, renderItem, renderEdit }) {
   const ref = useScrollAnimation({ delay: "delay-[150ms]" });
+  const [editingId, setEditingId] = useState(null);
+
   return (
     <div ref={ref} className="profile-card">
       <div className="profile-card-header-row">
         <h3 className="profile-card-title">{title}</h3>
-        <button onClick={onAdd} className="card-action-btn" title="Add"><FiPlus size={16} /></button>
+        <button onClick={() => {
+          const newId = Date.now();
+          onAdd(newId);
+          setEditingId(newId);
+        }} className="card-action-btn" title="Add"><FiPlus size={16} /></button>
       </div>
       <div className="list-items">
         {items.length === 0 ? (
@@ -530,14 +709,41 @@ function ListSectionCard({ title, items, onAdd, onDelete, renderItem }) {
         ) : (
           items.map((item, index) => (
             <div key={item.id} className={`list-item ${index !== items.length - 1 ? 'list-item--bordered' : ''}`}>
-               <div className="list-item-actions">
-                  <button className="card-action-btn"><FiEdit2 size={13} /></button>
-                  {onDelete && <button onClick={() => onDelete(item.id)} className="card-action-btn card-action-btn--danger"><FiTrash2 size={13} /></button>}
-               </div>
-               {renderItem(item)}
+               {editingId === item.id ? (
+                 <ListEditForm 
+                   initialItem={item} 
+                   onSave={(updated) => { 
+                     onUpdate(updated); 
+                     setEditingId(null); 
+                   }} 
+                   onCancel={() => setEditingId(null)}
+                   renderForm={renderEdit}
+                 />
+               ) : (
+                 <>
+                   <div className="list-item-actions">
+                      <button onClick={() => setEditingId(item.id)} className="card-action-btn"><FiEdit2 size={13} /></button>
+                      {onDelete && <button onClick={() => onDelete(item.id)} className="card-action-btn card-action-btn--danger"><FiTrash2 size={13} /></button>}
+                   </div>
+                   {renderItem(item)}
+                 </>
+               )}
             </div>
           ))
         )}
+      </div>
+    </div>
+  );
+}
+
+function ListEditForm({ initialItem, onSave, onCancel, renderForm }) {
+  const [item, setItem] = useState(initialItem);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {renderForm(item, setItem)}
+      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+        <button onClick={() => onSave(item)} className="profile-save-btn" style={{ padding: '6px 12px' }}>Save</button>
+        <button onClick={onCancel} className="card-action-btn" style={{ background: 'rgba(128,128,128,0.1)', padding: '6px 12px', opacity: 1, color: 'inherit' }}>Cancel</button>
       </div>
     </div>
   );

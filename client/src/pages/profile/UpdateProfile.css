@@ -133,6 +133,23 @@ body.light-theme .profile-progress-bar { background: #e5e5e5; }
   border-radius: 14px;
   padding: 20px;
   transition: box-shadow 0.2s ease, border-color 0.2s ease;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Custom Scrollbar for Cards */
+.profile-card::-webkit-scrollbar {
+  width: 6px;
+}
+.profile-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+.profile-card::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.2);
+  border-radius: 10px;
+}
+.profile-card::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.4);
 }
 
 body.dark-theme .profile-card {
@@ -160,10 +177,35 @@ body.light-theme .profile-card:hover { border-color: #ddd; }
   margin-bottom: 14px;
   padding-bottom: 10px;
   border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+  position: sticky;
+  top: -20px;
+  padding-top: 20px;
+  z-index: 10;
+}
+
+body.dark-theme .profile-card-header-row {
+  background: #111;
+}
+
+body.light-theme .profile-card-header-row {
+  background: #ffffff;
 }
 
 .profile-card-header {
   margin-bottom: 14px;
+  position: sticky;
+  top: -20px;
+  padding-top: 20px;
+  padding-bottom: 10px;
+  z-index: 10;
+}
+
+body.dark-theme .profile-card-header {
+  background: #111;
+}
+
+body.light-theme .profile-card-header {
+  background: #ffffff;
 }
 
 .profile-card-title {
@@ -239,9 +281,10 @@ body.light-theme .profile-photo { box-shadow: 0 0 0 3px #f0f0f0; }
 .profile-photo-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 16px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   color: #fff;
@@ -252,6 +295,12 @@ body.light-theme .profile-photo { box-shadow: 0 0 0 3px #f0f0f0; }
 
 .profile-photo-wrapper:hover .profile-photo-overlay {
   opacity: 1;
+}
+
+.photo-overlay-text {
+  font-size: 10px;
+  font-weight: 500;
+  margin-top: 4px;
 }
 
 .basic-info-fields {
@@ -457,6 +506,31 @@ body.light-theme .list-item:hover { background: rgba(0, 0, 0, 0.02); }
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.resume-current-download {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.resume-download-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ffa116;
+  text-decoration: none;
+  background: rgba(255, 161, 22, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: background 0.2s, transform 0.1s;
+}
+
+.resume-download-link:hover {
+  background: rgba(255, 161, 22, 0.15);
+  transform: translateY(-1px);
 }
 
 .resume-dropzone {

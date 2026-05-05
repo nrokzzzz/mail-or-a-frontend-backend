@@ -1,5 +1,5 @@
-const { extractSkills } = require("../../services/gemini.service");
-const { uploadToS3, deleteFromS3 } = require("../../services/s3.service");
+const { extractProfileData } = require("../../services/gemini.service");
+const { uploadToS3, deleteFromS3, getPresignedUrl } = require("../../services/s3.service");
 const User = require("./user.model");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
@@ -12,6 +12,9 @@ exports.getProfile = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    const photoUrl = user.photoS3Key ? await getPresignedUrl(user.photoS3Key) : user.photoUrl || "";
+    const resumeUrl = user.resumeS3Key ? await getPresignedUrl(user.resumeS3Key) : user.resumeUrl || null;
+
     // Shape the response to match frontend expectations
     res.json({
       user: {
@@ -19,13 +22,15 @@ exports.getProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         authProvider: user.authProvider,
+        photo: photoUrl,
       },
       basicInfo: {
-        firstName: user.firstName || user.name?.split(" ")[0] || "",
-        lastName:  user.lastName  || user.name?.split(" ").slice(1).join(" ") || "",
-        email:     user.email,
-        role:      user.role || "",
-        photo:     user.photoUrl || "",
+        name:         user.name || "",
+        countryCode:  user.countryCode || "+91",
+        mobileNumber: user.mobileNumber || "",
+        email:        user.email,
+        role:         user.role || "",
+        photo:        photoUrl,
       },
       profileData: {
         about:          user.about || "",
@@ -38,7 +43,7 @@ exports.getProfile = async (req, res) => {
         achievements:   user.achievements || "",
         connectedMails: user.connectedMails || [],
       },
-      resumeUrl: user.resumeUrl || null,
+      resumeUrl: resumeUrl,
     });
   } catch (err) {
     console.error("getProfile error:", err);
@@ -47,21 +52,21 @@ exports.getProfile = async (req, res) => {
 };
 
 // ─── PUT /api/user/basic ─────────────────────────────────────────────────────
-// Update basic info (firstName, lastName, email, role)
+// Update basic info (name, countryCode, mobileNumber, email, role)
 exports.updateBasicInfo = async (req, res) => {
   try {
-    const { firstName, lastName, email, role } = req.body;
+    const { name, countryCode, mobileNumber, email, role } = req.body;
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    if (firstName !== undefined) user.firstName = firstName;
-    if (lastName !== undefined)  user.lastName = lastName;
-    if (role !== undefined)      user.role = role;
-
-    // Update the 'name' field to stay in sync
-    if (firstName !== undefined || lastName !== undefined) {
-      user.name = `${user.firstName} ${user.lastName}`.trim();
+    if (name !== undefined) {
+      user.name = name;
+      user.firstName = name.split(" ")[0] || "";
+      user.lastName = name.split(" ").slice(1).join(" ") || "";
     }
+    if (countryCode !== undefined)  user.countryCode = countryCode;
+    if (mobileNumber !== undefined) user.mobileNumber = mobileNumber;
+    if (role !== undefined)         user.role = role;
 
     // Email change (only if different and not taken)
     if (email && email !== user.email) {
@@ -181,7 +186,8 @@ exports.uploadPhoto = async (req, res) => {
     user.photoS3Key = key;
     await user.save();
 
-    res.json({ message: "Photo uploaded", photoUrl: url });
+    const presignedUrl = await getPresignedUrl(key);
+    res.json({ message: "Photo uploaded", photoUrl: presignedUrl });
   } catch (err) {
     console.error("uploadPhoto error:", err);
     res.status(500).json({ message: "Server error during photo upload" });
@@ -219,13 +225,13 @@ exports.uploadResume = async (req, res) => {
       extractedText = result.value;
     }
 
-    // Extract skills via Gemini AI
-    let skills = [];
+    // Extract full profile data via Gemini AI
+    let extractedData = {};
     try {
-      skills = await extractSkills(extractedText);
+      extractedData = await extractProfileData(extractedText);
     } catch (e) {
-      console.warn("Gemini skill extraction failed, using fallback:", e.message);
-      // Fallback: basic keyword matching
+      console.warn("Gemini extraction failed, using fallback:", e.message);
+      // Fallback: basic keyword matching for skills and role
       const possibleSkills = [
         "React", "JavaScript", "Node.js", "Express", "MongoDB", "Python",
         "Java", "C++", "SQL", "Git", "Docker", "AWS", "TypeScript",
@@ -233,7 +239,14 @@ exports.uploadResume = async (req, res) => {
         "Redis", "PostgreSQL", "Firebase", "Flutter", "Kotlin", "Swift"
       ];
       const textLC = extractedText.toLowerCase();
-      skills = possibleSkills.filter(s => textLC.includes(s.toLowerCase()));
+      extractedData.skills = possibleSkills.filter(s => textLC.includes(s.toLowerCase()));
+      
+      let fallbackRole = "";
+      if (textLC.includes("frontend") || textLC.includes("react")) fallbackRole = "Frontend Developer";
+      else if (textLC.includes("backend") || textLC.includes("node")) fallbackRole = "Backend Developer";
+      else if (textLC.includes("full stack") || textLC.includes("fullstack")) fallbackRole = "Full Stack Developer";
+      else if (textLC.includes("data") || textLC.includes("machine learning")) fallbackRole = "Data Scientist";
+      extractedData.role = fallbackRole;
     }
 
     // Upload to S3
@@ -244,32 +257,57 @@ exports.uploadResume = async (req, res) => {
       req.user._id.toString()
     );
 
-    // Save to user profile
+    // Save S3 details to user profile
     user.resumeUrl = url;
     user.resumeS3Key = key;
-    user.extractedSkills = skills;
+    user.extractedSkills = extractedData.skills || [];
 
-    // Merge extracted skills into profile skills (deduplicate)
-    const mergedSkills = [...new Set([...user.skills, ...skills])];
-    user.skills = mergedSkills;
-
-    // Auto-detect role from resume text if not set
-    if (!user.role) {
-      const textLC = extractedText.toLowerCase();
-      if (textLC.includes("frontend") || textLC.includes("react")) user.role = "Frontend Developer";
-      else if (textLC.includes("backend") || textLC.includes("node")) user.role = "Backend Developer";
-      else if (textLC.includes("full stack") || textLC.includes("fullstack")) user.role = "Full Stack Developer";
-      else if (textLC.includes("data") || textLC.includes("machine learning")) user.role = "Data Scientist";
+    // Merge extracted data into profile (if present and user hasn't filled them out heavily)
+    if (extractedData.skills && Array.isArray(extractedData.skills)) {
+      user.skills = [...new Set([...user.skills, ...extractedData.skills])];
+    }
+    if (extractedData.role && !user.role) {
+      user.role = extractedData.role;
+    }
+    if (extractedData.about && !user.about) {
+      user.about = extractedData.about;
+    }
+    if (extractedData.achievements && !user.achievements) {
+      user.achievements = extractedData.achievements;
+    }
+    if (extractedData.experience && Array.isArray(extractedData.experience) && extractedData.experience.length > 0) {
+      // Append unique items (simplistic logic) or just append all
+      user.experience = [...user.experience, ...extractedData.experience];
+    }
+    if (extractedData.education && Array.isArray(extractedData.education) && extractedData.education.length > 0) {
+      user.education = [...user.education, ...extractedData.education];
+    }
+    if (extractedData.projects && Array.isArray(extractedData.projects) && extractedData.projects.length > 0) {
+      user.projects = [...user.projects, ...extractedData.projects];
+    }
+    if (extractedData.certifications && Array.isArray(extractedData.certifications) && extractedData.certifications.length > 0) {
+      user.certifications = [...user.certifications, ...extractedData.certifications];
     }
 
     await user.save();
 
+    const presignedUrl = await getPresignedUrl(key);
+
     res.json({
       message: "Resume processed and uploaded",
-      resumeUrl: url,
-      skills: mergedSkills,
-      extractedSkills: skills,
-      role: user.role,
+      resumeUrl: presignedUrl,
+      profileData: {
+        about: user.about,
+        skills: user.skills,
+        education: user.education,
+        experience: user.experience,
+        projects: user.projects,
+        certifications: user.certifications,
+        achievements: user.achievements,
+      },
+      basicInfo: {
+        role: user.role,
+      }
     });
   } catch (error) {
     console.error("Resume upload error:", error);

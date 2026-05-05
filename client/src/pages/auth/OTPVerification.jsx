@@ -60,6 +60,8 @@ export default function OTPVerification() {
         await axiosClient.post("/api/auth/signup", {
           name: signupData.username,
           email: email,
+          countryCode: signupData.countryCode,
+          mobileNumber: signupData.mobileNumber,
           password: signupData.password,
           otp: code,
         });

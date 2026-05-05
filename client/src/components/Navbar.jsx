@@ -96,7 +96,11 @@ const Navbar = () => {
                 id="nav-profile-btn"
               >
                 <div className="nav-avatar">
-                  {getInitials() || <FaUser size={14} />}
+                  {user?.photo ? (
+                    <img src={user.photo} alt="Profile" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                  ) : (
+                    getInitials() || <FaUser size={14} />
+                  )}
                 </div>
               </button>
 
@@ -106,7 +110,11 @@ const Navbar = () => {
                   {/* User info header */}
                   <div className="nav-dropdown-header">
                     <div className="nav-dropdown-avatar">
-                      {getInitials() || <FaUser size={16} />}
+                      {user?.photo ? (
+                        <img src={user.photo} alt="Profile" style={{ width: "100%", height: "100%", borderRadius: "50%", objectFit: "cover" }} />
+                      ) : (
+                        getInitials() || <FaUser size={16} />
+                      )}
                     </div>
                     <div className="nav-dropdown-user-info">
                       <span className="nav-dropdown-name">

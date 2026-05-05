@@ -7,7 +7,7 @@ import axiosClient from "../../helpers/axiosClient";
 import toast from "react-hot-toast";
 import "../../styles/auth-flow.css";
 import "../../styles/auth.css";
-import { useNavigate, useLocation, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 
 export default function ChangePassword() {
   const [newPass, setNewPass] = useState("");
@@ -15,12 +15,22 @@ export default function ChangePassword() {
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
-  const location = useLocation();
+  const [searchParams] = useSearchParams();
 
-  /* email coming from OTP page */
-  const email = location.state?.email;
-  if (!email) {
-    navigate("/forgot-password");
+  /* email and otp coming from URL query params */
+  const encryptedEmail = searchParams.get("email");
+  const otp = searchParams.get("otp");
+
+  if (!encryptedEmail || !otp) {
+    return (
+      <div className="auth-page-container">
+        <div className="auth-card" style={{ textAlign: "center" }}>
+          <h2>Invalid Link</h2>
+          <p>This password reset link is invalid or missing information.</p>
+          <Link to="/forgot-password" className="auth-btn-primary" style={{ display: 'inline-block', marginTop: '20px', textDecoration: 'none' }}>Back to Forgot Password</Link>
+        </div>
+      </div>
+    );
   }
 
   /* ── Password strength ── */
@@ -56,20 +66,18 @@ export default function ChangePassword() {
     setLoading(true);
     try {
       const res = await axiosClient.post("/api/auth/reset-password", {
-        email,
+        encryptedEmail,
+        otp,
         newPassword: newPass,
       });
 
-      if (res.data.success) {
-        toast.success("Password reset successful 🎉");
-        setTimeout(() => {
-          navigate("/login");
-        }, 1500);
-      } else {
-        toast.error("Something went wrong");
-      }
+      // Backend returns { message: ... } on success
+      toast.success(res.data.message || "Password reset successful 🎉");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (err) {
-      toast.error("Failed to reset password");
+      toast.error(err.response?.data?.message || "Failed to reset password");
     } finally {
       setLoading(false);
     }

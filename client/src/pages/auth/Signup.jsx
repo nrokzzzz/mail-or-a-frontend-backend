@@ -13,6 +13,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaMicrosoft } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import axiosClient from "../../helpers/axiosClient";
+import CountryCodeSelect from "../../components/CountryCodeSelect";
 import "../../styles/auth.css";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
@@ -21,6 +22,8 @@ const Signup = () => {
   const [formData, setFormData] = useState({
     username: "",
     email: "",
+    countryCode: "+91",
+    mobileNumber: "",
     password: "",
     confirmPassword: "",
   });
@@ -39,6 +42,7 @@ const Signup = () => {
     let newErrors = {};
     if (!formData.username) newErrors.username = "Username is required";
     if (!formData.email) newErrors.email = "Email is required";
+    if (!formData.mobileNumber) newErrors.mobileNumber = "Mobile number is required";
     if (!formData.password) newErrors.password = "Password is required";
     else if (formData.password.length < 6)
       newErrors.password = "Password must be at least 6 characters";
@@ -66,12 +70,13 @@ const Signup = () => {
 
       setErrors({});
 
-      // Navigate to OTP page with signup data
       navigate("/otp", {
         state: {
           type: "signup",
           email: formData.email,
           username: formData.username,
+          countryCode: formData.countryCode,
+          mobileNumber: formData.mobileNumber,
           password: formData.password,
         },
       });
@@ -196,6 +201,31 @@ const Signup = () => {
             />
             {errors.email && (
               <span className="error-text">{errors.email}</span>
+            )}
+          </div>
+
+          <div className="input-group">
+            <label className="input-label" htmlFor="signup-mobile">
+              Mobile Number
+            </label>
+            <div style={{ display: 'flex', gap: '8px', height: '42px' }}>
+              <CountryCodeSelect 
+                value={formData.countryCode} 
+                onChange={(code) => setFormData({...formData, countryCode: code})} 
+              />
+              <input
+                id="signup-mobile"
+                type="tel"
+                name="mobileNumber"
+                placeholder="e.g. 1234567890"
+                value={formData.mobileNumber}
+                onChange={handleChange}
+                className="auth-input"
+                style={{ flex: 1, height: '100%' }}
+              />
+            </div>
+            {errors.mobileNumber && (
+              <span className="error-text">{errors.mobileNumber}</span>
             )}
           </div>
 
