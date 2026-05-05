@@ -26,4 +26,5 @@ app.use("/api/accounts", require("./modules/connectedAccount/connectedAccount.ro
 app.use("/api/emails", require("./modules/email/email.routes"));
 app.use("/webhook", require("./webhooks/gmail.webhook"));
 app.use("/api", require("./modules/auth/google.routes")); // Gmail account connection (existing)
+app.use("/api/jobs", require("./modules/job/job.proxy")); // Proxy to SerpAPI microservice
 module.exports = app;
