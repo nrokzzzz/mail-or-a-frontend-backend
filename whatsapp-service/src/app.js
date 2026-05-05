@@ -1,0 +1,39 @@
+const express = require("express");
+const messageRoutes = require("./routes/messageRoutes");
+
+// ─── Express App Setup ──────────────────────────────────────────────────────
+const app = express();
+
+// Parse JSON request bodies
+app.use(express.json());
+
+// Mount routes
+app.use("/api", messageRoutes);
+
+// Health check is also available at root /health (outside /api prefix)
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    success: true,
+    status: "WhatsApp Service is running",
+    timestamp: new Date().toISOString(),
+  });
+});
+
+// 404 handler for unknown routes
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    error: `Route ${req.method} ${req.originalUrl} not found`,
+  });
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err.message);
+  res.status(500).json({
+    success: false,
+    error: "Internal server error",
+  });
+});
+
+module.exports = app;

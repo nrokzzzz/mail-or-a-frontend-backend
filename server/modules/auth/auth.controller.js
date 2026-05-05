@@ -55,10 +55,10 @@ exports.sendSignupOtp = async (req, res) => {
 // User is only created in DB if OTP is valid
 exports.signup = async (req, res) => {
   try {
-    const { name, email, password, countryCode, mobileNumber, otp } = req.body;
+    const { name, email, password, otp } = req.body;
 
-    if (!name || !email || !password || !mobileNumber || !otp) {
-      return res.status(400).json({ message: "Name, email, mobile number, password and OTP are required." });
+    if (!name || !email || !password || !otp) {
+      return res.status(400).json({ message: "Name, email, password and OTP are required." });
     }
 
     if (password.length < 6) {
@@ -94,7 +94,7 @@ exports.signup = async (req, res) => {
 
     // Create user only after OTP verified
     const hashed = await bcrypt.hash(password, 10);
-    const user   = await User.create({ name, email, countryCode, mobileNumber, password: hashed });
+    const user   = await User.create({ name, email, password: hashed });
 
     // Clean up pending record
     await PendingVerification.deleteOne({ email });

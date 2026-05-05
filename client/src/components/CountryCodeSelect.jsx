@@ -100,7 +100,7 @@ export default function CountryCodeSelect({ value, onChange, disabled }) {
   const selected = countryCodes.find(c => c.code === value) || { code: value, name: "Unknown" };
 
   return (
-    <div className="country-code-select" ref={dropdownRef} style={{ width: '75px', height: '100%', flexShrink: 0 }}>
+    <div className="country-code-select" ref={dropdownRef} style={{ width: '75px', flexShrink: 0, alignSelf: 'stretch' }}>
       <div 
         className={`auth-input ${disabled ? 'disabled' : ''}`}
         style={{ 
@@ -110,6 +110,7 @@ export default function CountryCodeSelect({ value, onChange, disabled }) {
           cursor: disabled ? 'not-allowed' : 'pointer',
           padding: '0 8px',
           height: '100%',
+          boxSizing: 'border-box',
           fontSize: '13px'
         }}
         onClick={() => !disabled && setIsOpen(!isOpen)}

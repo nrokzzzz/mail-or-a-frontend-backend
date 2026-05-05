@@ -131,5 +131,23 @@ export const profileService = {
     } catch (error) {
       throw new Error(error.response?.data?.message || "Resume upload failed");
     }
+  },
+
+  sendMobileOtp: async (countryCode, mobileNumber) => {
+    try {
+      const response = await axiosClient.post('/api/user/send-mobile-otp', { countryCode, mobileNumber });
+      return { success: true, message: response.data.message };
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "Failed to send OTP");
+    }
+  },
+
+  verifyMobileOtp: async (otp) => {
+    try {
+      const response = await axiosClient.post('/api/user/verify-mobile-otp', { otp });
+      return { success: true, data: response.data };
+    } catch (error) {
+      throw new Error(error.response?.data?.message || "OTP verification failed");
+    }
   }
 };

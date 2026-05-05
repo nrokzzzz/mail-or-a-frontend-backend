@@ -28,6 +28,7 @@ exports.getProfile = async (req, res) => {
         name:         user.name || "",
         countryCode:  user.countryCode || "+91",
         mobileNumber: user.mobileNumber || "",
+        isMobileVerified: user.isMobileVerified || false,
         email:        user.email,
         role:         user.role || "",
         photo:        photoUrl,
@@ -370,6 +371,109 @@ exports.updateProfile = async (req, res) => {
     await user.save();
     res.json({ message: "Profile updated", user });
   } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── POST /api/user/send-mobile-otp ─────────────────────────────────────────
+// Sends a 6-digit OTP via WhatsApp to the given phone number
+const axios = require("axios");
+
+exports.sendMobileOtp = async (req, res) => {
+  try {
+    const { countryCode, mobileNumber } = req.body;
+
+    if (!countryCode || !mobileNumber) {
+      return res.status(400).json({ message: "Country code and mobile number are required." });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Check if this number is already verified by another user
+    const rawNumber = mobileNumber.replace(/[\s\-\(\)]/g, "");
+    const existingUser = await User.findOne({
+      mobileNumber: rawNumber,
+      isMobileVerified: true,
+      _id: { $ne: req.user._id }
+    });
+    if (existingUser) {
+      return res.status(400).json({ message: "This mobile number is already verified by another account." });
+    }
+
+    // Generate 6-digit OTP
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const hashedOtp = await bcrypt.hash(otp, 10);
+
+    user.mobileOtp = hashedOtp;
+    user.mobileOtpExpiry = new Date(Date.now() + 90 * 1000); // 1 min 30 sec
+    user.countryCode = countryCode;
+    user.mobileNumber = rawNumber;
+    user.isMobileVerified = false;
+    await user.save();
+
+    // Send OTP via WhatsApp microservice
+    const whatsappUrl = process.env.WHATSAPP_SERVICE_URL || "http://localhost:3000";
+    const fullNumber = countryCode.replace("+", "") + rawNumber;
+
+    try {
+      await axios.post(`${whatsappUrl}/api/send`, {
+        number: fullNumber,
+        message: `🔐 Your Mail-or-a verification OTP is: *${otp}*\n\nThis code expires in 1 minute 30 seconds. Do not share it with anyone.`
+      });
+    } catch (whatsappErr) {
+      console.error("WhatsApp send failed:", whatsappErr.message);
+      return res.status(500).json({
+        message: "Failed to send OTP via WhatsApp. Please ensure the WhatsApp service is running."
+      });
+    }
+
+    res.json({ message: "OTP sent to your WhatsApp number." });
+  } catch (err) {
+    console.error("sendMobileOtp error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ─── POST /api/user/verify-mobile-otp ────────────────────────────────────────
+// Verifies the WhatsApp OTP and marks the mobile as verified
+exports.verifyMobileOtp = async (req, res) => {
+  try {
+    const { otp } = req.body;
+
+    if (!otp) {
+      return res.status(400).json({ message: "OTP is required." });
+    }
+
+    const user = await User.findById(req.user._id).select("+mobileOtp +mobileOtpExpiry");
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    if (!user.mobileOtp || !user.mobileOtpExpiry) {
+      return res.status(400).json({ message: "No OTP request found. Please request a new OTP." });
+    }
+
+    if (user.mobileOtpExpiry < new Date()) {
+      return res.status(400).json({ message: "OTP has expired. Please request a new one." });
+    }
+
+    const isMatch = await bcrypt.compare(otp, user.mobileOtp);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid OTP." });
+    }
+
+    user.isMobileVerified = true;
+    user.mobileOtp = undefined;
+    user.mobileOtpExpiry = undefined;
+    await user.save();
+
+    res.json({
+      message: "Mobile number verified successfully!",
+      mobileNumber: user.mobileNumber,
+      countryCode: user.countryCode,
+      isMobileVerified: true
+    });
+  } catch (err) {
+    console.error("verifyMobileOtp error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

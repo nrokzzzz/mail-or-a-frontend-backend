@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react"; // profile-v2
-import { FiUploadCloud, FiEdit2, FiSave, FiX, FiLink, FiCheckCircle, FiLock, FiEye, FiEyeOff, FiPlus, FiMail, FiTrash2 } from "react-icons/fi";
+import { FiUploadCloud, FiEdit2, FiSave, FiX, FiLink, FiCheckCircle, FiLock, FiEye, FiEyeOff, FiPlus, FiMail, FiTrash2, FiSmartphone, FiShield } from "react-icons/fi";
 import { useScrollAnimation } from "../../hooks/useScrollAnimation";
 import * as pdfjsLib from 'pdfjs-dist';
 import { profileService } from "../../services/profileService";
@@ -21,6 +21,7 @@ export default function UpdateProfile() {
     email: "",
     countryCode: "+91",
     mobileNumber: "",
+    isMobileVerified: false,
     role: "",
     photo: ""
   });
@@ -29,6 +30,16 @@ export default function UpdateProfile() {
   const [editCoding, setEditCoding] = useState(false);
   const [editSkills, setEditSkills] = useState(false);
   const [newSkill, setNewSkill] = useState("");
+
+  // Mobile OTP Verification State
+  const [mobileStep, setMobileStep] = useState("idle"); // idle | input | otp | verified
+  const [mobileCountryCode, setMobileCountryCode] = useState("+91");
+  const [mobileNumberInput, setMobileNumberInput] = useState("");
+  const [mobileOtp, setMobileOtp] = useState(["", "", "", "", "", ""]);
+  const [mobileOtpLoading, setMobileOtpLoading] = useState(false);
+  const [mobileOtpError, setMobileOtpError] = useState("");
+  const [mobileOtpTimer, setMobileOtpTimer] = useState(0);
+  const otpInputRefs = useRef([]);
 
   // Resume Upload State
   const [resumeFile, setResumeFile] = useState(null);
@@ -60,6 +71,15 @@ export default function UpdateProfile() {
           setBasicInfo(response.data.basicInfo);
           setProfileData(response.data.profileData);
           if (response.data.resumeUrl) setUploadedResumeUrl(response.data.resumeUrl);
+          // Set mobile verification state from backend
+          if (response.data.basicInfo.isMobileVerified) {
+            setMobileStep("verified");
+            setMobileCountryCode(response.data.basicInfo.countryCode || "+91");
+            setMobileNumberInput(response.data.basicInfo.mobileNumber || "");
+          } else if (response.data.basicInfo.mobileNumber) {
+            setMobileCountryCode(response.data.basicInfo.countryCode || "+91");
+            setMobileNumberInput(response.data.basicInfo.mobileNumber || "");
+          }
         }
       } catch (error) {
         console.error("Failed to fetch profile", error);
@@ -69,6 +89,13 @@ export default function UpdateProfile() {
     };
     fetchProfile();
   }, []);
+
+  // Mobile OTP timer countdown
+  useEffect(() => {
+    if (mobileOtpTimer <= 0) return;
+    const interval = setInterval(() => setMobileOtpTimer(prev => prev - 1), 1000);
+    return () => clearInterval(interval);
+  }, [mobileOtpTimer]);
 
   // Password change state
   const [pwdEditing, setPwdEditing] = useState(false);
@@ -85,6 +112,69 @@ export default function UpdateProfile() {
       }
     } catch (err) {
       alert(err.message || "Failed to upload photo");
+    }
+  };
+
+  // ── Mobile OTP Handlers ──
+  const handleSendMobileOtp = async () => {
+    if (!mobileNumberInput.trim()) {
+      setMobileOtpError("Please enter a mobile number.");
+      return;
+    }
+    setMobileOtpLoading(true);
+    setMobileOtpError("");
+    try {
+      await profileService.sendMobileOtp(mobileCountryCode, mobileNumberInput.trim());
+      setMobileStep("otp");
+      setMobileOtp(["", "", "", "", "", ""]);
+      setMobileOtpTimer(90);
+    } catch (err) {
+      setMobileOtpError(err.message);
+    } finally {
+      setMobileOtpLoading(false);
+    }
+  };
+
+  const handleVerifyMobileOtp = async () => {
+    const code = mobileOtp.join("");
+    if (code.length < 6) {
+      setMobileOtpError("Please enter the complete 6-digit OTP.");
+      return;
+    }
+    setMobileOtpLoading(true);
+    setMobileOtpError("");
+    try {
+      const result = await profileService.verifyMobileOtp(code);
+      if (result.success) {
+        setMobileStep("verified");
+        setBasicInfo(prev => ({
+          ...prev,
+          countryCode: result.data.countryCode,
+          mobileNumber: result.data.mobileNumber,
+          isMobileVerified: true
+        }));
+      }
+    } catch (err) {
+      setMobileOtpError(err.message);
+    } finally {
+      setMobileOtpLoading(false);
+    }
+  };
+
+  const handleMobileOtpChange = (index, value) => {
+    if (value.length > 1) return;
+    const newOtp = [...mobileOtp];
+    newOtp[index] = value;
+    setMobileOtp(newOtp);
+    // Auto-focus next input
+    if (value && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleMobileOtpKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !mobileOtp[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
     }
   };
 
@@ -221,21 +311,19 @@ export default function UpdateProfile() {
                 
                 <div className="profile-input-group">
                   <label className="profile-input-label">Mobile Number</label>
-                  <div style={{ display: 'flex', gap: '8px', height: '42px' }}>
-                    <CountryCodeSelect 
-                      disabled={!editBasic}
-                      value={basicInfo.countryCode || "+91"} 
-                      onChange={(code) => setBasicInfo({...basicInfo, countryCode: code})} 
-                    />
-                    <input 
-                      type="tel" 
-                      className="profile-text-input" 
-                      value={basicInfo.mobileNumber || ""} 
-                      disabled={!editBasic} 
-                      onChange={(e) => setBasicInfo({...basicInfo, mobileNumber: e.target.value})} 
-                      placeholder="e.g. 1234567890"
-                      style={{ flex: 1, height: '100%' }}
-                    />
+                  <div className="profile-input-value" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {basicInfo.isMobileVerified ? (
+                      <>
+                        <span>{basicInfo.countryCode} {basicInfo.mobileNumber}</span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#22c55e', fontSize: '12px', fontWeight: 600 }}>
+                          <FiCheckCircle size={13} /> Verified
+                        </span>
+                      </>
+                    ) : (
+                      <span className="profile-text-empty" style={{ fontSize: '13px' }}>
+                        Not verified — Use the card on the right to verify via WhatsApp
+                      </span>
+                    )}
                   </div>
                 </div>
 
@@ -386,6 +474,119 @@ export default function UpdateProfile() {
 
         {/* Sidebar Area (Right) */}
         <div className="profile-sidebar">
+
+          {/* ── WhatsApp Mobile Verification Card ── */}
+          <div className="profile-card">
+            <div className="profile-card-header">
+              <h3 className="profile-card-title">
+                <FiSmartphone className="profile-card-icon" /> Mobile Verification
+              </h3>
+              <p className="profile-card-desc">Verify your phone number via WhatsApp OTP for account security.</p>
+            </div>
+
+            <div style={{ padding: '0' }}>
+              {mobileStep === "verified" ? (
+                /* ── Verified State ── */
+                <div className="mobile-verified-box">
+                  <div className="mobile-verified-icon-wrap">
+                    <FiShield size={28} />
+                  </div>
+                  <div className="mobile-verified-info">
+                    <span className="mobile-verified-number">{mobileCountryCode} {mobileNumberInput}</span>
+                    <span className="mobile-verified-badge">
+                      <FiCheckCircle size={12} /> Verified
+                    </span>
+                  </div>
+                  <button 
+                    className="mobile-change-btn"
+                    onClick={() => {
+                      setMobileStep("input");
+                      setMobileOtpError("");
+                      setMobileOtp(["", "", "", "", "", ""]);
+                    }}
+                  >
+                    Change Number
+                  </button>
+                </div>
+              ) : mobileStep === "otp" ? (
+                /* ── OTP Entry State ── */
+                <div className="mobile-otp-box">
+                  <p className="mobile-otp-sent-text">
+                    OTP sent to <strong>{mobileCountryCode} {mobileNumberInput}</strong> via WhatsApp
+                  </p>
+
+                  <div className="mobile-otp-inputs">
+                    {mobileOtp.map((digit, idx) => (
+                      <input
+                        key={idx}
+                        ref={(el) => otpInputRefs.current[idx] = el}
+                        type="text"
+                        maxLength="1"
+                        value={digit}
+                        onChange={(e) => handleMobileOtpChange(idx, e.target.value.replace(/\D/g, ""))}
+                        onKeyDown={(e) => handleMobileOtpKeyDown(idx, e)}
+                        className="mobile-otp-digit"
+                      />
+                    ))}
+                  </div>
+
+                  {mobileOtpError && <p className="mobile-otp-error">{mobileOtpError}</p>}
+
+                  <button
+                    className="mobile-verify-btn"
+                    onClick={handleVerifyMobileOtp}
+                    disabled={mobileOtpLoading}
+                  >
+                    {mobileOtpLoading ? "Verifying..." : "Verify OTP"}
+                  </button>
+
+                  <div className="mobile-otp-footer">
+                    <button
+                      className="mobile-resend-btn"
+                      disabled={mobileOtpTimer > 0 || mobileOtpLoading}
+                      onClick={handleSendMobileOtp}
+                    >
+                      {mobileOtpTimer > 0 ? `Resend in ${Math.floor(mobileOtpTimer / 60)}:${String(mobileOtpTimer % 60).padStart(2, '0')}` : "Resend OTP"}
+                    </button>
+                    <button
+                      className="mobile-back-btn"
+                      onClick={() => { setMobileStep("input"); setMobileOtpError(""); }}
+                    >
+                      Change Number
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* ── Input State (idle / input) ── */
+                <div className="mobile-input-box">
+                  <div className="mobile-input-row">
+                    <CountryCodeSelect 
+                      value={mobileCountryCode}
+                      onChange={(code) => setMobileCountryCode(code)}
+                    />
+                    <input
+                      type="tel"
+                      className="profile-text-input"
+                      value={mobileNumberInput}
+                      onChange={(e) => setMobileNumberInput(e.target.value.replace(/\D/g, ""))}
+                      placeholder="e.g. 9876543210"
+                      style={{ flex: 1 }}
+                    />
+                  </div>
+
+                  {mobileOtpError && <p className="mobile-otp-error">{mobileOtpError}</p>}
+
+                  <button
+                    className="mobile-verify-btn"
+                    onClick={handleSendMobileOtp}
+                    disabled={mobileOtpLoading || !mobileNumberInput.trim()}
+                  >
+                    {mobileOtpLoading ? "Sending..." : "Send OTP via WhatsApp"}
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Resume Upload & Extract */}
           <div className="profile-card">

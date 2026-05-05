@@ -96,6 +96,16 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
+    mobileOtp: {
+      type: String,
+      select: false,
+    },
+
+    mobileOtpExpiry: {
+      type: Date,
+      select: false,
+    },
+
     // ── Profile Sections ──
     skills:         [{ type: String, trim: true }],
     education:      [educationSchema],
