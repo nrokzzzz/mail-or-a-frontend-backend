@@ -7,6 +7,8 @@ const crypto = require("crypto");
 const { sendSignupOtpEmail, sendResetPasswordEmail, sendChangePasswordEmail } = require("../../services/otp.email.service");
 const { getPresignedUrl } = require("../../services/s3.service");
 const { encrypt, decrypt } = require("../../utils/crypto");
+const { validateEmail, validatePassword, validateOtp } = require("../../utils/validators");
+const logger = require("../../utils/logger");
 
 // ─── Step 1: Send Signup OTP ──────────────────────────────────────────────────
 // POST /api/auth/send-signup-otp
@@ -16,13 +18,9 @@ exports.sendSignupOtp = async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email) {
-      return res.status(400).json({ message: "Please provide your email." });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Invalid email format." });
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.valid) {
+      return res.status(400).json({ message: emailCheck.message });
     }
 
     const existingUser = await User.findOne({ email });
@@ -45,7 +43,7 @@ exports.sendSignupOtp = async (req, res) => {
 
     res.json({ message: "OTP sent to your email. It is valid for 10 minutes." });
   } catch (error) {
-    console.error("Send signup OTP error:", error);
+    logger.error("Auth", "Send signup OTP error", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -62,13 +60,19 @@ exports.signup = async (req, res) => {
       return res.status(400).json({ message: "Name, email, password and OTP are required." });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters." });
+    const emailCheck = validateEmail(email);
+    if (!emailCheck.valid) {
+      return res.status(400).json({ message: emailCheck.message });
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Invalid email format." });
+    const pwdCheck = validatePassword(password);
+    if (!pwdCheck.valid) {
+      return res.status(400).json({ message: pwdCheck.message });
+    }
+
+    const otpCheck = validateOtp(otp);
+    if (!otpCheck.valid) {
+      return res.status(400).json({ message: otpCheck.message });
     }
 
     // Check OTP record exists
@@ -109,7 +113,7 @@ exports.signup = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Signup error:", error);
+    logger.error("Auth", "Signup error", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -158,7 +162,7 @@ exports.login = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error("Login error:", error);
+    logger.error("Auth", "Login error", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -211,7 +215,7 @@ exports.forgotPassword = async (req, res) => {
 
     res.json({ message: "If this email exists, a reset link has been sent." });
   } catch (error) {
-    console.error("Forgot password error:", error);
+    logger.error("Auth", "Forgot password error", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -263,7 +267,7 @@ exports.resetPassword = async (req, res) => {
 
     res.json({ message: "Password reset successful. You can now log in." });
   } catch (error) {
-    console.error("Reset password error:", error);
+    logger.error("Auth", "Reset password error", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -323,7 +327,7 @@ exports.changePassword = async (req, res) => {
 
     res.json({ message: "Password changed successfully." });
   } catch (error) {
-    console.error("Change password error:", error);
+    logger.error("Auth", "Change password error", error);
     res.status(500).json({ message: "Internal server error" });
   }
 };

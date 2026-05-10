@@ -17,6 +17,7 @@
  */
 
 const Reminder = require("../modules/reminder/reminder.model");
+const logger = require("../utils/logger");
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -48,7 +49,7 @@ async function createReminders({
 
   // If deadline is already past, skip
   if (timeUntilDeadline <= 0) {
-    console.log(`⏭️  Skipping reminders — deadline already passed for: ${emailSubject}`);
+    logger.debug("Reminder", `Skipping reminders — deadline already passed for: ${emailSubject}`);
     return;
   }
 
@@ -151,12 +152,12 @@ async function createReminders({
         // Duplicate — already scheduled, skip silently
         continue;
       }
-      console.error(`❌ Failed to create reminder [${doc.reminderType}]:`, err.message);
+      logger.error("Reminder", `Failed to create reminder [${doc.reminderType}]`, err);
     }
   }
 
   if (created > 0) {
-    console.log(`🔔 Created ${created} reminder(s) for: "${emailSubject}" (deadline: ${deadline.toISOString()})`);
+    logger.info("Reminder", `Created ${created} reminder(s) for: "${emailSubject}" (deadline: ${deadline.toISOString()})`);
   }
 }
 

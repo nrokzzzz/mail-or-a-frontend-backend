@@ -7,6 +7,7 @@
  */
 
 const { getProducer, TOPICS } = require("../../config/kafka");
+const logger = require("../../utils/logger");
 
 /**
  * Publish a WhatsApp message for delivery.
@@ -36,9 +37,7 @@ async function produceWhatsAppMessage(params) {
     ],
   });
 
-  console.log(
-    `📡 [Kafka] WhatsApp message queued [${params.reminderType}] for ${params.userName}`
-  );
+  logger.info("Kafka", `WhatsApp message queued [${params.reminderType}] for ${params.userName}`);
 }
 
 module.exports = { produceWhatsAppMessage };

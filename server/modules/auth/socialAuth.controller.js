@@ -1,5 +1,7 @@
 const { google } = require("googleapis");
+const jwt = require("jsonwebtoken");
 const User = require("../user/user.model");
+const logger = require("../../utils/logger");
 const { getGoogleOAuthClient } = require("../../services/google.service");
 const {
   getMicrosoftAuthUrl,
@@ -31,7 +33,7 @@ exports.googleSignIn = (req, res) => {
 
     res.redirect(authUrl);
   } catch (error) {
-    console.error("Google sign-in redirect error:", error);
+    logger.error("SocialAuth", "Google sign-in redirect error", error);
     res.status(500).json({ message: "Google sign-in failed" });
   }
 };
@@ -102,7 +104,7 @@ exports.googleCallback = async (req, res) => {
       `${process.env.FRONTEND_URL}/auth/callback?token=${token}&provider=google`
     );
   } catch (error) {
-    console.error("Google callback error:", error);
+    logger.error("SocialAuth", "Google callback error", error);
     res.redirect(`${process.env.FRONTEND_URL}/auth/error?message=google_failed`);
   }
 };
@@ -120,7 +122,7 @@ exports.microsoftSignIn = (req, res) => {
     const authUrl = getMicrosoftAuthUrl(state);
     res.redirect(authUrl);
   } catch (error) {
-    console.error("Microsoft sign-in redirect error:", error);
+    logger.error("SocialAuth", "Microsoft sign-in redirect error", error);
     res.status(500).json({ message: "Microsoft sign-in failed" });
   }
 };
@@ -186,7 +188,7 @@ exports.microsoftCallback = async (req, res) => {
       `${process.env.FRONTEND_URL}/auth/callback?token=${token}&provider=microsoft`
     );
   } catch (error) {
-    console.error("Microsoft callback error:", error);
+    logger.error("SocialAuth", "Microsoft callback error", error);
     res.redirect(`${process.env.FRONTEND_URL}/auth/error?message=microsoft_failed`);
   }
 };

@@ -287,7 +287,7 @@ export default function UpdateProfile() {
   const saveSection = async (section, data) => {
     try {
       await profileService.updateSection(section, data);
-      console.log(`Saved ${section}`);
+      // Section saved successfully
     } catch (e) {
       console.error(`Failed to save ${section}`, e);
     }

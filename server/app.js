@@ -1,37 +1,137 @@
+/**
+ * Express Application Configuration
+ *
+ * Central Express app setup including:
+ * - Security middleware (Helmet, CORS, Rate Limiting)
+ * - Request parsing (JSON, cookies)
+ * - HTTP logging (Morgan)
+ * - API v1 route mounting with versioned prefix
+ * - Global error handler with AppError support
+ */
+
 const express = require("express");
-// const cors = require("cors");
+const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
+const AppError = require("./utils/AppError");
+const logger = require("./utils/logger");
+const { generalLimiter, webhookLimiter } = require("./middlewares/rateLimiter.middleware");
 
 const app = express();
 
+// ─── Security & Parsing Middleware ──────────────────────────────────────────
 app.use(helmet());
 app.use(morgan("dev"));
 app.use(cookieParser());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+
+// ─── CORS Configuration ────────────────────────────────────────────────────
+// Origins are loaded from the ALLOWED_ORIGINS env variable (comma-separated)
+// Falls back to production domain if not set.
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+  ? process.env.ALLOWED_ORIGINS.split(",").map((o) => o.trim())
+  : ["https://mail-or-a.dev"];
+
 app.use(
-  require("cors")({
-    origin: ["https://mail-or-a.dev"],
+  cors({
+    origin: allowedOrigins,
     credentials: true,
   })
 );
-app.get('/', (req, res) => {
-  res.send("Hello NaGu");
-})
-app.use("/api/auth", require("./modules/auth/auth.routes"));
-app.use("/api/auth", require("./modules/auth/socialAuth.routes")); // Google + Microsoft sign-in
-app.use("/api/user", require("./modules/user/user.routes"));
-app.use("/api/accounts", require("./modules/connectedAccount/connectedAccount.routes"));
-app.use("/api/emails", require("./modules/email/email.routes"));
-app.use("/webhook", require("./webhooks/gmail.webhook"));
-app.use("/api", require("./modules/auth/google.routes")); // Gmail account connection (existing)
-app.use("/api/jobs", require("./modules/job/job.proxy")); // Proxy to SerpAPI microservice
 
-// Global Error Handler
-app.use((err, req, res, next) => {
-  console.error("Global Error Handler caught:", err.stack || err);
-  res.status(err.status || 500).json({
+// ─── Health Check (not versioned — used by load balancers & monitoring) ────
+app.get("/", (_req, res) => {
+  res.json({
+    service: "mailora-server",
+    version: "2.0.0",
+    status: "running",
+    uptime: Math.floor(process.uptime()),
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.get("/health", (_req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
+});
+
+// ─── API v1 Routes ──────────────────────────────────────────────────────────
+// All API routes are prefixed with /api/v1/ for versioning.
+// Legacy /api/ routes are aliased below for backward compatibility.
+const v1Router = express.Router();
+
+// Apply general rate limiting to all v1 API routes
+v1Router.use(generalLimiter);
+
+// Auth routes (have their own additional rate limiters in auth.routes.js)
+v1Router.use("/auth", require("./modules/auth/auth.routes"));
+v1Router.use("/auth", require("./modules/auth/socialAuth.routes"));
+
+// Protected resource routes
+v1Router.use("/user", require("./modules/user/user.routes"));
+v1Router.use("/accounts", require("./modules/connectedAccount/connectedAccount.routes"));
+v1Router.use("/emails", require("./modules/email/email.routes"));
+v1Router.use("/jobs", require("./modules/job/job.proxy"));
+
+// Gmail account connection (Google OAuth for email access)
+v1Router.use("/", require("./modules/auth/google.routes"));
+
+// Mount v1 routes
+app.use("/api/v1", v1Router);
+
+// ─── Backward Compatibility: /api/* → /api/v1/* ─────────────────────────────
+// Existing frontends using /api/ will still work until migrated.
+app.use("/api", v1Router);
+
+// ─── Webhooks (not versioned — external services call these) ────────────────
+app.use("/webhook", webhookLimiter, require("./webhooks/gmail.webhook"));
+
+// ─── 404 Handler ────────────────────────────────────────────────────────────
+app.all("*", (req, _res, next) => {
+  next(new AppError(`Route not found: ${req.method} ${req.originalUrl}`, 404));
+});
+
+// ─── Global Error Handler ───────────────────────────────────────────────────
+app.use((err, _req, res, _next) => {
+  // Default values
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || "error";
+
+  // Log non-operational (unexpected) errors with full stack
+  if (!err.isOperational) {
+    logger.error("Server", "Unexpected error", err);
+  }
+
+  // Mongoose validation error → 400 with field details
+  if (err.name === "ValidationError") {
+    const messages = Object.values(err.errors).map((e) => e.message);
+    return res.status(400).json({
+      status: "fail",
+      message: "Validation failed",
+      errors: messages,
+    });
+  }
+
+  // Mongoose duplicate key error → 400
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyValue).join(", ");
+    return res.status(400).json({
+      status: "fail",
+      message: `Duplicate value for: ${field}`,
+    });
+  }
+
+  // JWT errors → 401
+  if (err.name === "JsonWebTokenError" || err.name === "TokenExpiredError") {
+    return res.status(401).json({
+      status: "fail",
+      message: "Invalid or expired token",
+    });
+  }
+
+  // Standard error response
+  res.status(err.statusCode).json({
+    status: err.status,
     message: err.message || "Internal Server Error",
     ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
   });

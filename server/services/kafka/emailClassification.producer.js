@@ -9,6 +9,7 @@
  */
 
 const { getProducer, TOPICS } = require("../../config/kafka");
+const logger = require("../../utils/logger");
 
 /**
  * Publish an email for AI classification.
@@ -42,7 +43,7 @@ async function produceEmailForClassification(params) {
     ],
   });
 
-  console.log(`📡 [Kafka] Email queued for classification: ${params.subject?.substring(0, 50)}`);
+  logger.info("Kafka", `Email queued for classification: ${params.subject?.substring(0, 50)}`);
 }
 
 module.exports = { produceEmailForClassification };

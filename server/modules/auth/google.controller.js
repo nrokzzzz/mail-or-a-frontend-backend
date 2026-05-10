@@ -7,6 +7,7 @@ const {
   getGoogleOAuthClient,
   getGmailClient,
 } = require("../../services/google.service");
+const logger = require("../../utils/logger");
 
 const SCOPES = [
   "https://www.googleapis.com/auth/gmail.readonly",
@@ -33,7 +34,7 @@ exports.googleAuth = async (req, res) => {
 
     res.redirect(authUrl);
   } catch (error) {
-    console.error("Google auth error:", error);
+    logger.error("GoogleAuth", "Google auth error", error);
     res.status(500).json({ message: "Google auth failed" });
   }
 };
@@ -133,7 +134,7 @@ exports.googleCallback = async (req, res) => {
 
     res.redirect(`${frontendUrl}/profile?gmail=success&email=${encodeURIComponent(emailAddress)}`);
   } catch (error) {
-    console.error("Google callback error:", error);
+    logger.error("GoogleAuth", "Google callback error", error);
     res.redirect(`${frontendUrl}/profile?gmail=error&msg=Connection+failed`);
   }
 };

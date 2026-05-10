@@ -5,6 +5,7 @@ const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 const bcrypt = require("bcryptjs");
 const fs = require("fs");
+const logger = require("../../utils/logger");
 
 // ─── GET /api/user/me ────────────────────────────────────────────────────────
 // Returns the full user profile (structured for the frontend)
@@ -48,7 +49,7 @@ exports.getProfile = async (req, res) => {
       resumeUrl: resumeUrl,
     });
   } catch (err) {
-    console.error("getProfile error:", err);
+    logger.error(" User\, "getProfile error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -82,7 +83,7 @@ exports.updateBasicInfo = async (req, res) => {
     await user.save();
     res.json({ message: "Basic info updated", user });
   } catch (err) {
-    console.error("updateBasicInfo error:", err);
+    logger.error(" User\, "updateBasicInfo error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -120,7 +121,7 @@ exports.updateProfileData = async (req, res) => {
     await user.save();
     res.json({ message: "Profile updated", user });
   } catch (err) {
-    console.error("updateProfileData error:", err);
+    logger.error(" User\, "updateProfileData error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -150,7 +151,7 @@ exports.updateSection = async (req, res) => {
 
     res.json({ message: `${section} updated`, [section]: user[section] });
   } catch (err) {
-    console.error("updateSection error:", err);
+    logger.error(" User\, "updateSection error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -197,7 +198,7 @@ exports.uploadPhoto = async (req, res) => {
     if (req.file && req.file.path && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
-    console.error("uploadPhoto error:", err);
+    logger.error(" User\, "uploadPhoto error:", err);
     res.status(500).json({ message: "Server error during photo upload" });
   }
 };
@@ -324,7 +325,7 @@ exports.uploadResume = async (req, res) => {
     if (req.file && req.file.path && fs.existsSync(req.file.path)) {
       fs.unlinkSync(req.file.path);
     }
-    console.error("Resume upload error:", error);
+    logger.error(" User\, "Resume upload error:", error);
     res.status(500).json({ message: "Server error during file processing" });
   }
 };
@@ -366,7 +367,7 @@ exports.changePassword = async (req, res) => {
 
     res.json({ message: "Password updated successfully" });
   } catch (err) {
-    console.error("changePassword error:", err);
+    logger.error(" User\, "changePassword error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -441,7 +442,7 @@ exports.sendMobileOtp = async (req, res) => {
         message: `🔐 Your Mail-or-a verification OTP is: *${otp}*\n\nThis code expires in 1 minute 30 seconds. Do not share it with anyone.`
       });
     } catch (whatsappErr) {
-      console.error("WhatsApp send failed:", whatsappErr.message);
+      logger.error(" User\, "WhatsApp send failed:", whatsappErr.message);
       return res.status(500).json({
         message: "Failed to send OTP via WhatsApp. Please ensure the WhatsApp service is running."
       });
@@ -449,7 +450,7 @@ exports.sendMobileOtp = async (req, res) => {
 
     res.json({ message: "OTP sent to your WhatsApp number." });
   } catch (err) {
-    console.error("sendMobileOtp error:", err);
+    logger.error(" User\, "sendMobileOtp error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -492,7 +493,7 @@ exports.verifyMobileOtp = async (req, res) => {
       isMobileVerified: true
     });
   } catch (err) {
-    console.error("verifyMobileOtp error:", err);
+    logger.error(" User\, "verifyMobileOtp error:", err);
     res.status(500).json({ message: "Server error" });
   }
 };

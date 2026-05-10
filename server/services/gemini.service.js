@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const logger = require("../utils/logger");
 
 // Initialize the SDK with your API Key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -44,7 +45,7 @@ exports.extractProfileData = async (resumeText) => {
         return JSON.parse(text);
 
     } catch (error) {
-        console.error("Gemini Full Error:", error);
+        logger.error("Gemini", "Full Error", error);
         throw error;
     }
 };

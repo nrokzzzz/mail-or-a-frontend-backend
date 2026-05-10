@@ -15,6 +15,7 @@ const cron = require("node-cron");
 const Reminder = require("../modules/reminder/reminder.model");
 const User = require("../modules/user/user.model");
 const { produceWhatsAppMessage } = require("./kafka/whatsappMessage.producer");
+const logger = require("../utils/logger");
 
 /**
  * Format a WhatsApp reminder message
@@ -104,7 +105,7 @@ async function processDueReminders() {
 
   if (dueReminders.length === 0) return;
 
-  console.log(`\n🔔 [Reminder Scheduler] Processing ${dueReminders.length} due reminder(s)...`);
+  logger.info("Scheduler", `Processing ${dueReminders.length} due reminder(s)...`);
 
   for (const reminder of dueReminders) {
     try {
@@ -156,13 +157,13 @@ async function processDueReminders() {
       reminder.status = "queued";
       await reminder.save();
 
-      console.log(`  📡 Queued [${reminder.reminderType}] for ${user.name} (${whatsappNumber})`);
+      logger.info("Scheduler", `Queued [${reminder.reminderType}] for ${user.name} (${whatsappNumber})`);
 
     } catch (err) {
       reminder.status = "failed";
       reminder.failReason = `Kafka produce error: ${err.message}`;
       await reminder.save();
-      console.error(`  ❌ Error [${reminder.reminderType}]:`, err.message);
+      logger.error("Scheduler", `Error [${reminder.reminderType}]`, err);
     }
 
     // Small delay between messages to avoid overwhelming Kafka
@@ -175,24 +176,24 @@ async function processDueReminders() {
  * Runs every 5 minutes.
  */
 function startReminderScheduler() {
-  console.log("🔔 Reminder Scheduler started — checking every 5 minutes (Kafka-backed)");
+  logger.info("Scheduler", "Reminder Scheduler started — checking every 5 minutes (Kafka-backed)");
 
   // Run every 5 minutes
   cron.schedule("*/5 * * * *", async () => {
     try {
       await processDueReminders();
     } catch (err) {
-      console.error("❌ [Reminder Scheduler] Cron error:", err.message);
+      logger.error("Scheduler", "Cron error", err);
     }
   });
 
   // Also run once on startup (after a 10-second delay to let DB + Kafka connect)
   setTimeout(async () => {
     try {
-      console.log("🔔 [Reminder Scheduler] Running initial check...");
+      logger.info("Scheduler", "Running initial check...");
       await processDueReminders();
     } catch (err) {
-      console.error("❌ [Reminder Scheduler] Initial run error:", err.message);
+      logger.error("Scheduler", "Initial run error", err);
     }
   }, 10000);
 }

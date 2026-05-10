@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const logger = require("../utils/logger");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -52,7 +53,7 @@ Body: ${body}
 
     return JSON.parse(result.response.text());
   } catch (error) {
-    console.error("Gemini Classification Error:", error.message);
+    logger.error("EmailAI", "Gemini Classification Error", error);
     throw error;
   }
 };

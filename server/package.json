@@ -5,9 +5,18 @@
   "main": "server.js",
   "scripts": {
     "dev": "nodemon server.js",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "jest --verbose --forceExit --detectOpenHandles"
   },
-  "keywords": ["email-classifier", "gemini-ai", "kafka", "whatsapp", "job-tracker", "express", "mongodb"],
+  "keywords": [
+    "email-classifier",
+    "gemini-ai",
+    "kafka",
+    "whatsapp",
+    "job-tracker",
+    "express",
+    "mongodb"
+  ],
   "author": "Mailora Team",
   "license": "ISC",
   "type": "commonjs",
@@ -33,5 +42,8 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.2",
     "pdf-parse": "^1.1.1"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2"
   }
 }

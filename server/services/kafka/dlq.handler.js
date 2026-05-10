@@ -8,6 +8,7 @@
 
 const { getProducer, TOPICS } = require("../../config/kafka");
 const FailedMessage = require("../../modules/failedMessage/failedMessage.model");
+const logger = require("../../utils/logger");
 
 /**
  * Send a failed message to the dead-letter queue.
@@ -50,13 +51,11 @@ async function sendToDLQ(originalTopic, payload, error, retryCount) {
       userId: payload.userId || null,
     });
 
-    console.error(
-      `💀 [DLQ] Message sent to ${dlqTopic} after ${retryCount} retries: ${error}`
-    );
+    logger.error("DLQ", `Message sent to ${dlqTopic} after ${retryCount} retries: ${error}`);
   } catch (dlqErr) {
     // If even the DLQ write fails, log to stderr as last resort
-    console.error(`🚨 [DLQ] CRITICAL — Failed to write to DLQ:`, dlqErr.message);
-    console.error(`🚨 [DLQ] Original payload:`, JSON.stringify(payload));
+    logger.error("DLQ", "CRITICAL — Failed to write to DLQ", dlqErr);
+    logger.error("DLQ", "Original payload", JSON.stringify(payload));
   }
 }
 

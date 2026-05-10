@@ -8,6 +8,7 @@ const ConnectedAccount = require("./connectedAccount.model");
 const { refreshGoogleTokenIfNeeded, getGmailClient } = require("../../services/google.service");
 const { extractBody } = require("../../utils/emailParser");
 const { produceEmailForClassification } = require("../../services/kafka/emailClassification.producer");
+const logger = require("../../utils/logger");
 
 /**
  * POST /api/accounts/:id/sync
@@ -26,7 +27,7 @@ exports.syncAccount = async (req, res) => {
       return res.status(404).json({ message: "Connected account not found" });
     }
 
-    console.log(`🔄 Manual sync started for: ${account.emailAddress}`);
+    logger.info("Sync", `Manual sync started for: ${account.emailAddress}`);
 
     const oauthClient = await refreshGoogleTokenIfNeeded(account);
     const gmail = getGmailClient(oauthClient);
@@ -65,7 +66,7 @@ exports.syncAccount = async (req, res) => {
       } catch (histErr) {
         // If historyId is too old, fall back to listing recent messages
         if (histErr.code === 404 || histErr.message?.includes("historyId")) {
-          console.log("⚠️ History expired, falling back to recent messages");
+          logger.warn("Sync", "History expired, falling back to recent messages");
           const result = await syncRecentMessages(gmail, account);
           queuedCount = result.queued;
           skippedCount = result.skipped;
@@ -80,7 +81,7 @@ exports.syncAccount = async (req, res) => {
       skippedCount = result.skipped;
     }
 
-    console.log(`✅ Sync complete: ${queuedCount} queued to Kafka, ${skippedCount} skipped`);
+    logger.info("Sync", `Sync complete: ${queuedCount} queued to Kafka, ${skippedCount} skipped`);
 
     res.json({
       message: "Sync complete — emails queued for AI classification",
@@ -89,7 +90,7 @@ exports.syncAccount = async (req, res) => {
       email: account.emailAddress,
     });
   } catch (err) {
-    console.error("❌ Manual sync error:", err);
+    logger.error("Sync", "Manual sync error", err);
     res.status(500).json({ message: "Sync failed: " + (err.message || "Unknown error") });
   }
 };
@@ -155,11 +156,11 @@ async function processMessage(gmail, messageId, account) {
       internalDate: fullMessage.data.internalDate,
     });
 
-    console.log(`📡 [Sync] Queued for classification: ${subject.substring(0, 60)}`);
+    logger.info("Sync", `Queued for classification: ${subject.substring(0, 60)}`);
     return "queued";
 
   } catch (err) {
-    console.error("❌ Process message error:", err.message);
+    logger.error("Sync", "Process message error", err);
     return "error";
   }
 }

@@ -1,4 +1,12 @@
+/**
+ * Connected Account Controller
+ *
+ * Manages Gmail/Outlook connected accounts. Handles listing
+ * and disconnecting accounts for the authenticated user.
+ */
+
 const ConnectedAccount = require("./connectedAccount.model");
+const logger = require("../../utils/logger");
 
 // Get all connected accounts for user
 exports.getAccounts = async (req, res) => {
@@ -10,7 +18,7 @@ exports.getAccounts = async (req, res) => {
 
     res.json(accounts);
   } catch (err) {
-    console.error("Error fetching accounts:", err);
+    logger.error("Account", "Error fetching accounts", err);
     res.status(500).json({ message: "Server error" });
   }
 };
@@ -29,7 +37,7 @@ exports.disconnectAccount = async (req, res) => {
 
     res.json({ message: "Account disconnected", emailAddress: account.emailAddress });
   } catch (err) {
-    console.error("Error disconnecting account:", err);
+    logger.error("Account", "Error disconnecting account", err);
     res.status(500).json({ message: "Server error" });
   }
 };

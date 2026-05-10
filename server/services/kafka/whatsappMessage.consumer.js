@@ -12,6 +12,7 @@ const axios = require("axios");
 const { createConsumer, TOPICS } = require("../../config/kafka");
 const { sendToDLQ } = require("./dlq.handler");
 const Reminder = require("../../modules/reminder/reminder.model");
+const logger = require("../../utils/logger");
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || "https://whatsapp.mail-or-a.dev";
 const MAX_RETRIES = 5;
@@ -48,9 +49,7 @@ async function processWhatsAppMessage(messagePayload) {
           sentAt: new Date(),
         });
 
-        console.log(
-          `✅ [Kafka Consumer] WhatsApp sent [${reminderType}] to ${userName} (${whatsappNumber})`
-        );
+        logger.info("KafkaConsumer", `WhatsApp sent [${reminderType}] to ${userName} (${whatsappNumber})`);
         return; // Success
       } else {
         // API returned success: false — treat as a retryable error
@@ -60,9 +59,7 @@ async function processWhatsAppMessage(messagePayload) {
       retryCount++;
 
       if (retryCount > MAX_RETRIES) {
-        console.error(
-          `💀 [Kafka Consumer] Max retries (${MAX_RETRIES}) for WhatsApp [${reminderType}] to ${userName}`
-        );
+        logger.error("KafkaConsumer", `Max retries (${MAX_RETRIES}) for WhatsApp [${reminderType}] to ${userName}`);
 
         // Update reminder status to failed
         try {
@@ -71,7 +68,7 @@ async function processWhatsAppMessage(messagePayload) {
             failReason: `Kafka DLQ after ${MAX_RETRIES} retries: ${err.message}`,
           });
         } catch (dbErr) {
-          console.error("❌ Failed to update reminder status:", dbErr.message);
+          logger.error("KafkaConsumer", "Failed to update reminder status", dbErr);
         }
 
         // Send to DLQ
@@ -86,9 +83,7 @@ async function processWhatsAppMessage(messagePayload) {
 
       // Exponential backoff
       const backoffMs = BASE_BACKOFF_MS * Math.pow(2, retryCount - 1);
-      console.warn(
-        `🔄 [Kafka Consumer] WhatsApp retry ${retryCount}/${MAX_RETRIES} in ${backoffMs}ms — ${err.message}`
-      );
+      logger.warn("KafkaConsumer", `WhatsApp retry ${retryCount}/${MAX_RETRIES} in ${backoffMs}ms — ${err.message}`);
       await new Promise((r) => setTimeout(r, backoffMs));
     }
   }
@@ -106,7 +101,7 @@ async function startWhatsAppMessageConsumer() {
     fromBeginning: false,
   });
 
-  console.log("📡 [Kafka] WhatsApp message consumer started");
+  logger.info("Kafka", "WhatsApp message consumer started");
 
   await consumer.run({
     eachMessage: async ({ topic, partition, message }) => {
@@ -114,7 +109,7 @@ async function startWhatsAppMessageConsumer() {
         const payload = JSON.parse(message.value.toString());
         await processWhatsAppMessage(payload);
       } catch (err) {
-        console.error("❌ [Kafka Consumer] WhatsApp message parse/process error:", err.message);
+        logger.error("KafkaConsumer", "WhatsApp message parse/process error", err);
       }
     },
   });

@@ -6,6 +6,7 @@
  */
 
 const { Kafka, logLevel } = require("kafkajs");
+const logger = require("../utils/logger");
 
 // ─── Kafka Broker Config ────────────────────────────────────────────────────
 const BROKERS = (process.env.KAFKA_BROKERS || "localhost:9092").split(",");
@@ -31,7 +32,7 @@ async function getProducer() {
       transactionTimeout: 30000,
     });
     await _producer.connect();
-    console.log("📡 Kafka producer connected");
+    logger.info("Kafka", "Producer connected");
   }
   return _producer;
 }
@@ -61,7 +62,7 @@ async function ensureTopics(topicNames) {
           replicationFactor: 1,
         })),
       });
-      console.log(`📡 Kafka topics created: ${toCreate.join(", ")}`);
+      logger.info("Kafka", `Topics created: ${toCreate.join(", ")}`);
     }
   } finally {
     await admin.disconnect();
@@ -81,7 +82,7 @@ async function disconnectKafka() {
   if (_producer) {
     await _producer.disconnect();
     _producer = null;
-    console.log("📡 Kafka producer disconnected");
+    logger.info("Kafka", "Producer disconnected");
   }
 }
 

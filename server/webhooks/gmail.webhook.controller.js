@@ -10,16 +10,17 @@ const { refreshGoogleTokenIfNeeded, getGmailClient } = require("../services/goog
 const { produceEmailForClassification } = require("../services/kafka/emailClassification.producer");
 
 const { extractBody } = require("../utils/emailParser");
+const logger = require("../utils/logger");
 
 /**
  * Main webhook handler
  */
 exports.handleGmailWebhook = async (req, res) => {
   try {
-    console.log("📩 Gmail webhook received");
+    logger.info("Webhook", "Gmail webhook received");
 
     if (process.env.WEBHOOK_SECRET && req.query.token !== process.env.WEBHOOK_SECRET) {
-      console.log("❌ Unauthorized webhook access");
+      logger.warn("Webhook", "Unauthorized webhook access");
       return res.sendStatus(403);
     }
 
@@ -36,8 +37,8 @@ exports.handleGmailWebhook = async (req, res) => {
 
     const { emailAddress, historyId } = decodedData;
 
-    console.log("Email:", emailAddress);
-    console.log("New HistoryId:", historyId);
+    logger.info("Webhook", `Email: ${emailAddress}`);
+    logger.info("Webhook", `New HistoryId: ${historyId}`);
 
     const account = await ConnectedAccount.findOne({
       emailAddress,
@@ -46,7 +47,7 @@ exports.handleGmailWebhook = async (req, res) => {
     });
 
     if (!account) {
-      console.log("❌ No connected account found");
+      logger.warn("Webhook", "No connected account found");
       return res.sendStatus(200);
     }
 
@@ -54,7 +55,7 @@ exports.handleGmailWebhook = async (req, res) => {
 
     res.sendStatus(200);
   } catch (error) {
-    console.error("❌ Gmail webhook error:", error);
+    logger.error("Webhook", "Gmail webhook error", error);
     res.sendStatus(200); // always 200 for Pub/Sub
   }
 };
@@ -67,7 +68,7 @@ async function fetchNewEmails(account, newHistoryId) {
   try {
     // Guard: lastHistoryId must exist — set during watch() in google.controller.js
     if (!account.lastHistoryId) {
-      console.warn("⚠️ No lastHistoryId on account, skipping history fetch");
+      logger.warn("Webhook", "No lastHistoryId on account, skipping history fetch");
       account.lastHistoryId = newHistoryId;
       await account.save();
       return;
@@ -121,10 +122,10 @@ async function fetchNewEmails(account, newHistoryId) {
             internalDate: fullMessage.data.internalDate,
           });
 
-          console.log(`📡 [Webhook] Queued for classification: ${subject.substring(0, 60)}`);
+          logger.info("Webhook", `Queued for classification: ${subject.substring(0, 60)}`);
 
         } catch (err) {
-          console.error("❌ Email queuing error:", err.message);
+          logger.error("Webhook", "Email queuing error", err);
         }
       }
     }
@@ -133,6 +134,6 @@ async function fetchNewEmails(account, newHistoryId) {
     await account.save();
 
   } catch (error) {
-    console.error("❌ fetchNewEmails error:", error);
+    logger.error("Webhook", "fetchNewEmails error", error);
   }
 }

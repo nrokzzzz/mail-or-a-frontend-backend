@@ -10,6 +10,7 @@
 
 const express = require("express");
 const axios = require("axios");
+const logger = require("../../utils/logger");
 
 const router = express.Router();
 const MICROSERVICE_URL = process.env.NODE_ENV === "production" ? "https://jobs.mail-or-a.dev/api/jobs" : "http://localhost:5001/api/jobs";
@@ -22,7 +23,7 @@ router.get("/search", async (req, res) => {
     });
     res.status(response.status).json(response.data);
   } catch (error) {
-    console.error("[Job Proxy] Error forwarding search request:", error.message);
+    logger.error("JobProxy", "Error forwarding search request", error);
     if (error.response) {
       res.status(error.response.status).json(error.response.data);
     } else {
@@ -37,7 +38,7 @@ router.get("/roles", async (req, res) => {
     const response = await axios.get(`${MICROSERVICE_URL}/roles`);
     res.status(response.status).json(response.data);
   } catch (error) {
-    console.error("[Job Proxy] Error forwarding roles request:", error.message);
+    logger.error("JobProxy", "Error forwarding roles request", error);
     if (error.response) {
       res.status(error.response.status).json(error.response.data);
     } else {
@@ -52,7 +53,7 @@ router.post("/refresh", async (req, res) => {
     const response = await axios.post(`${MICROSERVICE_URL}/refresh`);
     res.status(response.status).json(response.data);
   } catch (error) {
-    console.error("[Job Proxy] Error forwarding refresh request:", error.message);
+    logger.error("JobProxy", "Error forwarding refresh request", error);
     if (error.response) {
       res.status(error.response.status).json(error.response.data);
     } else {
