@@ -1,6 +1,7 @@
 const User = require("../user/user.model");
 const PendingVerification = require("./pendingVerification.model");
 const bcrypt = require("bcryptjs");
+const { generateToken, setAuthCookie } = require("../../utils/auth");
 const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const { sendSignupOtpEmail, sendResetPasswordEmail, sendChangePasswordEmail } = require("../../services/otp.email.service");
@@ -114,11 +115,6 @@ exports.signup = async (req, res) => {
 };
 
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
-};
 
 exports.login = async (req, res) => {
   try {
@@ -147,12 +143,7 @@ exports.login = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
+    setAuthCookie(res, token);
 
     const photoUrl = user.photoS3Key ? await getPresignedUrl(user.photoS3Key) : user.photoUrl || "";
 
@@ -170,6 +161,18 @@ exports.login = async (req, res) => {
     console.error("Login error:", error);
     res.status(500).json({ message: "Internal server error" });
   }
+};
+
+// ─── Logout ──────────────────────────────────────────────────────────────────
+// POST /api/auth/logout
+// Clears the httpOnly JWT cookie so the user is fully logged out
+exports.logout = (req, res) => {
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+  });
+  res.json({ message: "Logged out successfully" });
 };
 
 // ─── Forgot Password ─────────────────────────────────────────────────────────

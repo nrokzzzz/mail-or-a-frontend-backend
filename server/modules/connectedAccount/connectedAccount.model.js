@@ -9,6 +9,8 @@ const connectedAccountSchema = new mongoose.Schema(
       index: true,
     },
 
+    // Provider is enum-based for multi-provider extensibility.
+    // Currently: Google Gmail. Future: Microsoft Outlook via Graph API.
     provider: {
       type: String,
       enum: ["google", "microsoft"],

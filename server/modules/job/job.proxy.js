@@ -1,3 +1,13 @@
+/**
+ * Job Proxy — Forwards job-related requests to the SerpAPI microservice.
+ *
+ * Future Scope: Add a GET /recommendations proxy that accepts the user's
+ * extracted resume skills (User.extractedSkills[]) and role (User.role)
+ * to return personalized job recommendations ranked by skill overlap.
+ * The SerpAPI microservice already stores jobs with `role` and `snippet`
+ * fields, making skill-based matching straightforward.
+ */
+
 const express = require("express");
 const axios = require("axios");
 

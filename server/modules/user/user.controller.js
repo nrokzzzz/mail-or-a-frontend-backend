@@ -4,6 +4,7 @@ const User = require("./user.model");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
 const bcrypt = require("bcryptjs");
+const fs = require("fs");
 
 // ─── GET /api/user/me ────────────────────────────────────────────────────────
 // Returns the full user profile (structured for the frontend)
@@ -176,12 +177,15 @@ exports.uploadPhoto = async (req, res) => {
 
     // Upload new photo
     const { url, key } = await uploadToS3(
-      req.file.buffer,
+      req.file.path,
       req.file.originalname,
       req.file.mimetype,
       req.user._id.toString(),
       "photos" // folder prefix
     );
+
+    // Clean up temp file
+    fs.unlinkSync(req.file.path);
 
     user.photoUrl = url;
     user.photoS3Key = key;
@@ -190,6 +194,9 @@ exports.uploadPhoto = async (req, res) => {
     const presignedUrl = await getPresignedUrl(key);
     res.json({ message: "Photo uploaded", photoUrl: presignedUrl });
   } catch (err) {
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
     console.error("uploadPhoto error:", err);
     res.status(500).json({ message: "Server error during photo upload" });
   }
@@ -203,7 +210,7 @@ exports.uploadResume = async (req, res) => {
       return res.status(400).json({ message: "Please upload a PDF or DOCX file." });
     }
 
-    const fileBuffer = req.file.buffer;
+    const fileBuffer = fs.readFileSync(req.file.path);
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
@@ -252,11 +259,14 @@ exports.uploadResume = async (req, res) => {
 
     // Upload to S3
     const { url, key } = await uploadToS3(
-      fileBuffer,
+      req.file.path,
       req.file.originalname,
       req.file.mimetype,
       req.user._id.toString()
     );
+
+    // Clean up temp file
+    fs.unlinkSync(req.file.path);
 
     // Save S3 details to user profile
     user.resumeUrl = url;
@@ -311,6 +321,9 @@ exports.uploadResume = async (req, res) => {
       }
     });
   } catch (error) {
+    if (req.file && req.file.path && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
     console.error("Resume upload error:", error);
     res.status(500).json({ message: "Server error during file processing" });
   }

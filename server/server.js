@@ -6,6 +6,15 @@ const { ensureTopics, TOPICS } = require("./config/kafka");
 const { startEmailClassificationConsumer } = require("./services/kafka/emailClassification.consumer");
 const { startWhatsAppMessageConsumer } = require("./services/kafka/whatsappMessage.consumer");
 
+process.on("unhandledRejection", (reason, promise) => {
+  console.error("Unhandled Rejection at:", promise, "reason:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+  console.error("Uncaught Exception thrown:", error);
+  process.exit(1); // Exit immediately to prevent unstable state
+});
+
 connectDB();
 
 const PORT = process.env.PORT || 5000;

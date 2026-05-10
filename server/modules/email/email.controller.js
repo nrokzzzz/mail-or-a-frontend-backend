@@ -2,7 +2,7 @@ const RegistrationEmail = require("./registration.model");
 const RegisteredEmail   = require("./registered.model");
 const InProgressEmail   = require("./inprogress.model");
 const ConfirmedEmail    = require("./confirmed.model");
-const Reminder          = require("../remainder/reminder.model");
+const Reminder          = require("../reminder/reminder.model");
 const { decrypt }       = require("../../utils/crypto");
 
 const MODELS = [

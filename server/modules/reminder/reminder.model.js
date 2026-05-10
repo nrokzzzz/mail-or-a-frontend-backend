@@ -67,7 +67,7 @@ const reminderSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "sent", "failed", "skipped"],
+      enum: ["pending", "queued", "sent", "failed", "skipped"],
       default: "pending",
       index: true,
     },

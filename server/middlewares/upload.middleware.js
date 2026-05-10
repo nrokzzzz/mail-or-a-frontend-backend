@@ -1,8 +1,16 @@
 const multer = require("multer");
 
-// Use memory storage — file is held in req.file.buffer (never written to disk)
-// This buffer is sent directly to S3
-const storage = multer.memoryStorage();
+const os = require("os");
+
+// Use disk storage — file is saved temporarily to the OS temp directory
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, os.tmpdir());
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
 
 // Resume upload — PDF and DOCX only, 5MB max
 const upload = multer({

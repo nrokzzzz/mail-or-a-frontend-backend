@@ -1,3 +1,14 @@
+/**
+ * Microsoft OAuth Service
+ *
+ * Currently used for: Microsoft account sign-in (authentication only).
+ *
+ * Future Scope: Extend with getOutlookClient() and listMessages() methods
+ * to support Microsoft Outlook/Office 365 email ingestion via the Graph API.
+ * The ConnectedAccount model and Kafka email-classification pipeline are
+ * already provider-agnostic, so Outlook emails will flow through the same
+ * AI classification → storage → reminder pipeline with zero changes.
+ */
 const axios = require("axios");
 
 const TENANT = "common"; // supports personal + work/school accounts

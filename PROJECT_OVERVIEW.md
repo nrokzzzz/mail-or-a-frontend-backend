@@ -516,3 +516,67 @@ External: MongoDB Atlas | AWS S3 | Google Pub/Sub | SerpAPI | Gemini API
 | `KAFKA_BROKERS` | Server | Kafka broker addresses |
 | `SERPAPI_KEY` | SerpAPI | SerpAPI access key |
 | `ALLOWED_ORIGINS` | WhatsApp | CORS whitelist |
+
+## 14. Future Scope & Extensibility
+
+The architecture of Mail-or-a has been intentionally designed with extensibility in mind. The provider-agnostic data models, event-driven Kafka pipeline, and modular service boundaries allow the following enhancements to be added with minimal refactoring:
+
+### 14.1 Microsoft Outlook Email Integration (Phase 2)
+
+**Current State:** The system currently supports Gmail account connections using Google OAuth and the Gmail API for real-time email ingestion via Google Pub/Sub webhooks.
+
+**Future Enhancement:** Add Microsoft Outlook/Office 365 email support using the Microsoft Graph API.
+
+**Why the architecture is ready:**
+- The `ConnectedAccount` model already has `provider: enum ["google", "microsoft"]` — no schema change needed.
+- The `sync.controller.js` and `gmail.webhook.controller.js` are provider-specific by design, so an `outlook.webhook.controller.js` can be created following the same pattern.
+- The Kafka `email-classification` topic is **provider-agnostic** — the consumer only cares about `{ subject, body, from, snippet }`, not the email source. So Outlook emails would flow through the same classification pipeline.
+- The `microsoft.service.js` already contains OAuth URL generation, token exchange, and Graph API profile fetch — extending it with `getOutlookClient()` and `listMessages()` follows the same established pattern.
+- Email models (`registration.model.js`, etc.) already store `provider: enum ["google", "microsoft"]` — Outlook emails will be stored alongside Gmail emails with no structural changes.
+
+**Implementation Path:**
+1. Add `outlook.controller.js` with Graph API mail sync logic.
+2. Add `outlook.webhook.js` to receive Microsoft Graph change notifications.
+3. Reuse the existing `produceEmailForClassification()` Kafka producer — zero changes needed.
+4. The existing Kafka consumer, AI classifier, reminder creator, and WhatsApp pipeline will handle Outlook emails automatically.
+
+### 14.2 AI-Powered Job Recommendations from Resume (Phase 2)
+
+**Current State:** When a user uploads a resume, Gemini AI extracts structured profile data (skills, role, experience, education) and stores it in the User document. The SerpAPI service independently fetches jobs across 7 IT roles daily.
+
+**Future Enhancement:** Use the extracted resume skills and role to generate **personalized job recommendations** — matching the user's skills against available job listings.
+
+**Why the architecture is ready:**
+- `User.extractedSkills[]` and `User.role` are already populated from resume parsing via `gemini.service.js`.
+- The `Job` model in `serpapiservice` already has `role` and `snippet` fields that can be matched against user skills.
+- The `job.proxy.js` already proxies requests from the main backend to the SerpAPI microservice — a new `/api/jobs/recommendations` route can be added.
+
+**Implementation Path:**
+1. Add `GET /api/jobs/recommendations` endpoint in the SerpAPI service.
+2. Accept `skills[]` and `role` as query parameters from the main backend.
+3. Query MongoDB: `Job.find({ role: userRole }).lean()`, then rank jobs by skill overlap using a simple scoring algorithm.
+4. Alternatively, use Gemini AI to perform semantic matching between resume text and job descriptions for higher-quality recommendations.
+5. The proxy in `job.proxy.js` forwards the request — frontend calls the same `/api/jobs/recommendations` endpoint.
+
+### 14.3 Additional Future Enhancements
+
+| Feature | Effort | Description |
+|---|---|---|
+| **Google Calendar Sync** | Medium | Auto-create calendar events for interview deadlines using the Google Calendar API. The OAuth scopes can be extended in `google.controller.js`. |
+| **Email Notifications** | Low | The `otp.email.service.js` Nodemailer transport can be reused to send deadline reminders via email in addition to WhatsApp. |
+| **Analytics Dashboard** | Medium | Track application success rates, response times, and category distributions using aggregation queries on the existing email models. |
+| **Browser Extension** | Medium | A Chrome extension that detects job postings on LinkedIn/Indeed and saves them directly to Mail-or-a via the existing REST API. |
+| **Multi-language AI Classification** | Low | The Gemini prompt in `emailAI.service.js` can be extended to handle non-English emails by adding a language detection step. |
+
+## 15. Code Quality Practices
+
+| Practice | Implementation |
+|---|---|
+| **Modular Architecture** | Feature-based module structure (`modules/auth/`, `modules/email/`, etc.) with dedicated model, controller, and routes per feature. |
+| **DRY Principle** | Shared utilities extracted into `utils/auth.js`, `utils/crypto.js`, and `utils/emailParser.js` — no duplicated logic. |
+| **Security** | AES-256 encryption for stored email content, bcrypt password hashing, httpOnly JWT cookies, CSRF-protected OAuth state tokens, rate limiting on auth endpoints. |
+| **Fault Tolerance** | Kafka message pipeline with exponential backoff retries (5 attempts) and dead-letter queues persisted to MongoDB for manual review. |
+| **Graceful Error Handling** | Global Express error handler, process-level `uncaughtException`/`unhandledRejection` listeners, and per-controller try/catch blocks. |
+| **Data Integrity** | Mongoose schema validation with enums, unique compound indexes, TTL auto-expiration on stale emails, and duplicate-prevention indexes. |
+| **Scalable File Uploads** | Multer disk storage with streaming uploads to AWS S3 — server RAM is never consumed by file buffers. |
+| **API Protection** | Rate limiting on authentication endpoints (login: 5/15min, OTP: 3/10min) to prevent brute-force and spam attacks. |

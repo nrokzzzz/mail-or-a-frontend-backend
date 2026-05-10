@@ -1,5 +1,4 @@
 const { google } = require("googleapis");
-const jwt = require("jsonwebtoken");
 const User = require("../user/user.model");
 const { getGoogleOAuthClient } = require("../../services/google.service");
 const {
@@ -7,23 +6,10 @@ const {
   getMicrosoftTokens,
   getMicrosoftProfile,
 } = require("../../services/microsoft.service");
+const { generateToken, setAuthCookie } = require("../../utils/auth");
 
 // Scopes for sign-in only (profile + email, NOT Gmail access)
 const GOOGLE_SIGNIN_SCOPES = ["openid", "profile", "email"];
-
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-};
-
-const setAuthCookie = (res, token) => {
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  });
-};
-
 // ─── Google Sign-In ───────────────────────────────────────────────────────────
 // GET /api/auth/google
 exports.googleSignIn = (req, res) => {

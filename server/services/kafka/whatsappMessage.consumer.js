@@ -11,7 +11,7 @@
 const axios = require("axios");
 const { createConsumer, TOPICS } = require("../../config/kafka");
 const { sendToDLQ } = require("./dlq.handler");
-const Reminder = require("../../modules/remainder/reminder.model");
+const Reminder = require("../../modules/reminder/reminder.model");
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || "https://whatsapp.mail-or-a.dev";
 const MAX_RETRIES = 5;

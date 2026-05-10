@@ -13,6 +13,7 @@
  * so the session survives page refresh.
  */
 import { createContext, useState, useContext, useCallback } from 'react';
+import axiosClient from '../helpers/axiosClient';
 
 const AuthContext = createContext();
 
@@ -42,8 +43,13 @@ export const AuthProvider = ({ children }) => {
     if (authToken) localStorage.setItem(TOKEN_KEY, authToken);
   }, []);
 
-  /** Clears auth state — caller is responsible for navigation */
-  const logout = useCallback(() => {
+  /** Clears auth state — calls server to clear httpOnly cookie */
+  const logout = useCallback(async () => {
+    try {
+      await axiosClient.post('/api/auth/logout');
+    } catch {
+      // Even if the server call fails, clear local state
+    }
     setUser(null);
     setToken(null);
     localStorage.removeItem(USER_KEY);

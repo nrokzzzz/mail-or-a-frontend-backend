@@ -2,6 +2,7 @@ const { S3Client, PutObjectCommand, DeleteObjectCommand, GetObjectCommand } = re
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const crypto = require("crypto");
 const path = require("path");
+const fs = require("fs");
 
 const s3 = new S3Client({
   region: process.env.AWS_REGION,
@@ -22,16 +23,17 @@ const BUCKET = process.env.S3_BUCKET_NAME;
  * @param {string} [folder='resumes'] - S3 folder prefix (e.g. 'resumes', 'photos')
  * @returns {{ key: string, url: string }} - S3 object key and public URL
  */
-exports.uploadToS3 = async (fileBuffer, originalName, mimetype, userId, folder = "resumes") => {
+exports.uploadToS3 = async (filePath, originalName, mimetype, userId, folder = "resumes") => {
   const ext = path.extname(originalName);
   const uniqueName = `${crypto.randomUUID()}${ext}`;
   const key = `${folder}/${userId}/${uniqueName}`;
+  const fileStream = fs.createReadStream(filePath);
 
   await s3.send(
     new PutObjectCommand({
       Bucket: BUCKET,
       Key: key,
-      Body: fileBuffer,
+      Body: fileStream,
       ContentType: mimetype,
     })
   );

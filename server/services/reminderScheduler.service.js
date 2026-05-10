@@ -12,7 +12,7 @@
  */
 
 const cron = require("node-cron");
-const Reminder = require("../modules/remainder/reminder.model");
+const Reminder = require("../modules/reminder/reminder.model");
 const User = require("../modules/user/user.model");
 const { produceWhatsAppMessage } = require("./kafka/whatsappMessage.producer");
 

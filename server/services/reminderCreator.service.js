@@ -16,7 +16,7 @@
  *   • Remind 1 hour before deadline
  */
 
-const Reminder = require("../modules/remainder/reminder.model");
+const Reminder = require("../modules/reminder/reminder.model");
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;

@@ -27,4 +27,14 @@ app.use("/api/emails", require("./modules/email/email.routes"));
 app.use("/webhook", require("./webhooks/gmail.webhook"));
 app.use("/api", require("./modules/auth/google.routes")); // Gmail account connection (existing)
 app.use("/api/jobs", require("./modules/job/job.proxy")); // Proxy to SerpAPI microservice
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  console.error("Global Error Handler caught:", err.stack || err);
+  res.status(err.status || 500).json({
+    message: err.message || "Internal Server Error",
+    ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
+  });
+});
+
 module.exports = app;

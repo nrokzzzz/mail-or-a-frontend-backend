@@ -6,36 +6,8 @@
 
 const ConnectedAccount = require("./connectedAccount.model");
 const { refreshGoogleTokenIfNeeded, getGmailClient } = require("../../services/google.service");
+const { extractBody } = require("../../utils/emailParser");
 const { produceEmailForClassification } = require("../../services/kafka/emailClassification.producer");
-
-/**
- * Extract body text from MIME parts (same as webhook controller)
- */
-function extractBody(payload, snippet = "") {
-  if (!payload) return snippet;
-  if (payload.body?.data) {
-    return Buffer.from(payload.body.data, "base64url").toString("utf8");
-  }
-  if (!payload.parts || payload.parts.length === 0) return snippet;
-
-  function collectParts(parts) {
-    const flat = [];
-    for (const part of parts) {
-      if (part.parts) flat.push(...collectParts(part.parts));
-      else flat.push(part);
-    }
-    return flat;
-  }
-
-  const allParts = collectParts(payload.parts);
-  const plainPart = allParts.find(p => p.mimeType === "text/plain" && p.body?.data);
-  if (plainPart) return Buffer.from(plainPart.body.data, "base64url").toString("utf8");
-  const htmlPart = allParts.find(p => p.mimeType === "text/html" && p.body?.data);
-  if (htmlPart) return Buffer.from(htmlPart.body.data, "base64url").toString("utf8");
-  const anyPart = allParts.find(p => p.body?.data);
-  if (anyPart) return Buffer.from(anyPart.body.data, "base64url").toString("utf8");
-  return snippet;
-}
 
 /**
  * POST /api/accounts/:id/sync

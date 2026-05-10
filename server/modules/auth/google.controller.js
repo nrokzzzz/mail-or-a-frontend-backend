@@ -20,7 +20,7 @@ exports.googleAuth = async (req, res) => {
   try {
     const oauthClient = getGoogleOAuthClient();
 
-    const stateToken = jwt.sign({ userId: req.user._id.toString() }, process.env.JWT_SECRET || "fallback_secret", {
+    const stateToken = jwt.sign({ userId: req.user._id.toString() }, process.env.JWT_SECRET, {
         expiresIn: "10m",
     });
 
@@ -52,7 +52,7 @@ exports.googleCallback = async (req, res) => {
 
     let decoded;
     try {
-        decoded = jwt.verify(state, process.env.JWT_SECRET || "fallback_secret");
+        decoded = jwt.verify(state, process.env.JWT_SECRET);
     } catch (err) {
         return res.redirect(`${frontendUrl}/profile?gmail=error&msg=Session+expired`);
     }
