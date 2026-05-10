@@ -4,16 +4,17 @@
  * Runs a cron job every 5 minutes that:
  * 1. Finds all Reminder documents where scheduledAt <= now AND status === "pending"
  * 2. Looks up the user's verified WhatsApp number
- * 3. Sends a formatted WhatsApp message via the WhatsApp microservice
- * 4. Marks the reminder as "sent" or "failed"
+ * 3. Publishes a formatted WhatsApp message to Kafka `whatsapp-messages` topic
+ * 4. The Kafka consumer handles actual delivery with retry + DLQ fallback
+ *
+ * Refactored: Direct HTTP calls to WhatsApp service replaced with Kafka producer.
+ * This ensures failed messages are retried automatically and not lost.
  */
 
 const cron = require("node-cron");
-const axios = require("axios");
 const Reminder = require("../modules/remainder/reminder.model");
 const User = require("../modules/user/user.model");
-
-const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || "https://whatsapp.mail-or-a.dev";
+const { produceWhatsAppMessage } = require("./kafka/whatsappMessage.producer");
 
 /**
  * Format a WhatsApp reminder message
@@ -90,7 +91,7 @@ function formatReminderMessage(reminder) {
 }
 
 /**
- * Process all due reminders
+ * Process all due reminders — publish to Kafka instead of direct HTTP.
  */
 async function processDueReminders() {
   const now = new Date();
@@ -99,7 +100,7 @@ async function processDueReminders() {
   const dueReminders = await Reminder.find({
     status: "pending",
     scheduledAt: { $lte: now },
-  }).limit(50); // Process max 50 at a time to avoid overwhelming WhatsApp
+  }).limit(50); // Process max 50 at a time
 
   if (dueReminders.length === 0) return;
 
@@ -141,33 +142,31 @@ async function processDueReminders() {
       // Build message
       const message = formatReminderMessage(reminder);
 
-      // Send via WhatsApp service
-      const response = await axios.post(
-        `${WHATSAPP_SERVICE_URL}/api/send`,
-        { number: whatsappNumber, message },
-        { timeout: 15000 }
-      );
+      // ─── Publish to Kafka instead of direct HTTP ──────────────
+      await produceWhatsAppMessage({
+        reminderId: reminder._id.toString(),
+        userId: reminder.userId.toString(),
+        whatsappNumber,
+        message,
+        reminderType: reminder.reminderType,
+        userName: user.name,
+      });
 
-      if (response.data.success) {
-        reminder.status = "sent";
-        reminder.sentAt = new Date();
-        await reminder.save();
-        console.log(`  ✅ Sent [${reminder.reminderType}] to ${user.name} (${whatsappNumber})`);
-      } else {
-        reminder.status = "failed";
-        reminder.failReason = response.data.error || "WhatsApp send failed";
-        await reminder.save();
-        console.log(`  ❌ Failed [${reminder.reminderType}]: ${response.data.error}`);
-      }
+      // Mark as "queued" — the Kafka consumer will update to "sent" or "failed"
+      reminder.status = "queued";
+      await reminder.save();
+
+      console.log(`  📡 Queued [${reminder.reminderType}] for ${user.name} (${whatsappNumber})`);
+
     } catch (err) {
       reminder.status = "failed";
-      reminder.failReason = err.message;
+      reminder.failReason = `Kafka produce error: ${err.message}`;
       await reminder.save();
       console.error(`  ❌ Error [${reminder.reminderType}]:`, err.message);
     }
 
-    // Small delay between messages to avoid rate-limiting
-    await new Promise((r) => setTimeout(r, 1500));
+    // Small delay between messages to avoid overwhelming Kafka
+    await new Promise((r) => setTimeout(r, 500));
   }
 }
 
@@ -176,7 +175,7 @@ async function processDueReminders() {
  * Runs every 5 minutes.
  */
 function startReminderScheduler() {
-  console.log("🔔 Reminder Scheduler started — checking every 5 minutes");
+  console.log("🔔 Reminder Scheduler started — checking every 5 minutes (Kafka-backed)");
 
   // Run every 5 minutes
   cron.schedule("*/5 * * * *", async () => {
@@ -187,7 +186,7 @@ function startReminderScheduler() {
     }
   });
 
-  // Also run once on startup (after a 10-second delay to let DB connect)
+  // Also run once on startup (after a 10-second delay to let DB + Kafka connect)
   setTimeout(async () => {
     try {
       console.log("🔔 [Reminder Scheduler] Running initial check...");

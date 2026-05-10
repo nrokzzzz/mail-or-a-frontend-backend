@@ -1,27 +1,12 @@
 // modules/connectedAccount/sync.controller.js
+//
 // On-demand Gmail sync — polls Gmail API directly instead of relying on Pub/Sub webhooks.
-// This is essential for local development where Google can't reach localhost.
+// Refactored to use Kafka for fault-tolerant email classification.
+// Raw email data is published to the `email-classification` Kafka topic.
 
 const ConnectedAccount = require("./connectedAccount.model");
-const RegistrationEmail = require("../email/registration.model");
-const RegisteredEmail = require("../email/registered.model");
-const InProgressEmail = require("../email/inprogress.model");
-const ConfirmedEmail = require("../email/confirmed.model");
 const { refreshGoogleTokenIfNeeded, getGmailClient } = require("../../services/google.service");
-const { encrypt } = require("../../utils/crypto");
-const { classifyEmail } = require("../../services/emailAI.service");
-const { createReminders } = require("../../services/reminderCreator.service");
-
-const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
-const VALID_CATEGORIES = ["job", "internship", "hackathon", "workshop"];
-
-function getModelForStage(stage) {
-  if (stage === "registration") return RegistrationEmail;
-  if (stage === "registered") return RegisteredEmail;
-  if (stage === "inprogress") return InProgressEmail;
-  if (stage === "confirmed") return ConfirmedEmail;
-  return null;
-}
+const { produceEmailForClassification } = require("../../services/kafka/emailClassification.producer");
 
 /**
  * Extract body text from MIME parts (same as webhook controller)
@@ -55,7 +40,7 @@ function extractBody(payload, snippet = "") {
 /**
  * POST /api/accounts/:id/sync
  * Manually sync emails from a connected Gmail account.
- * Fetches recent inbox messages and processes them through the AI classifier.
+ * Fetches recent inbox messages and publishes them to Kafka for classification.
  */
 exports.syncAccount = async (req, res) => {
   try {
@@ -74,7 +59,7 @@ exports.syncAccount = async (req, res) => {
     const oauthClient = await refreshGoogleTokenIfNeeded(account);
     const gmail = getGmailClient(oauthClient);
 
-    let processedCount = 0;
+    let queuedCount = 0;
     let skippedCount = 0;
 
     // Strategy: Use history API if we have a lastHistoryId, else fetch recent messages
@@ -94,7 +79,7 @@ exports.syncAccount = async (req, res) => {
               const msg = msgObj.message;
               if (!msg.labelIds || !msg.labelIds.includes("INBOX")) continue;
               const result = await processMessage(gmail, msg.id, account);
-              if (result === "stored") processedCount++;
+              if (result === "queued") queuedCount++;
               else skippedCount++;
             }
           }
@@ -110,7 +95,7 @@ exports.syncAccount = async (req, res) => {
         if (histErr.code === 404 || histErr.message?.includes("historyId")) {
           console.log("⚠️ History expired, falling back to recent messages");
           const result = await syncRecentMessages(gmail, account);
-          processedCount = result.processed;
+          queuedCount = result.queued;
           skippedCount = result.skipped;
         } else {
           throw histErr;
@@ -119,15 +104,15 @@ exports.syncAccount = async (req, res) => {
     } else {
       // No history ID — fetch recent messages
       const result = await syncRecentMessages(gmail, account);
-      processedCount = result.processed;
+      queuedCount = result.queued;
       skippedCount = result.skipped;
     }
 
-    console.log(`✅ Sync complete: ${processedCount} processed, ${skippedCount} skipped`);
+    console.log(`✅ Sync complete: ${queuedCount} queued to Kafka, ${skippedCount} skipped`);
 
     res.json({
-      message: "Sync complete",
-      processed: processedCount,
+      message: "Sync complete — emails queued for AI classification",
+      queued: queuedCount,
       skipped: skippedCount,
       email: account.emailAddress,
     });
@@ -141,7 +126,7 @@ exports.syncAccount = async (req, res) => {
  * Fetch the 20 most recent INBOX messages and process them
  */
 async function syncRecentMessages(gmail, account) {
-  let processed = 0;
+  let queued = 0;
   let skipped = 0;
 
   const listResponse = await gmail.users.messages.list({
@@ -151,12 +136,12 @@ async function syncRecentMessages(gmail, account) {
   });
 
   if (!listResponse.data.messages) {
-    return { processed: 0, skipped: 0 };
+    return { queued: 0, skipped: 0 };
   }
 
   for (const msg of listResponse.data.messages) {
     const result = await processMessage(gmail, msg.id, account);
-    if (result === "stored") processed++;
+    if (result === "queued") queued++;
     else skipped++;
   }
 
@@ -165,11 +150,12 @@ async function syncRecentMessages(gmail, account) {
   account.lastHistoryId = profile.data.historyId;
   await account.save();
 
-  return { processed, skipped };
+  return { queued, skipped };
 }
 
 /**
- * Process a single Gmail message: classify + store
+ * Process a single Gmail message: extract data and publish to Kafka for classification.
+ * Classification, storage, and reminder creation happen in the Kafka consumer.
  */
 async function processMessage(gmail, messageId, account) {
   try {
@@ -184,87 +170,23 @@ async function processMessage(gmail, messageId, account) {
     const snippet = fullMessage.data.snippet || "";
     const emailBody = extractBody(fullMessage.data.payload, snippet);
 
-    // AI Classification
-    const aiResult = await classifyEmail(subject, snippet);
-    const { category, stage, deadline, matter, links } = aiResult;
-
-    console.log(`🤖 [${category}/${stage}]: ${subject.substring(0, 60)}`);
-
-    if (!VALID_CATEGORIES.includes(category)) return "skipped";
-
-    const Model = getModelForStage(stage);
-    if (!Model) return "skipped";
-
-    const expiresAt = new Date(Date.now() + THREE_MONTHS_MS);
-
-    const baseDoc = {
-      userId: account.userId,
-      connectedAccountId: account._id,
+    // ─── Publish to Kafka for async classification ─────────────
+    await produceEmailForClassification({
+      userId: account.userId.toString(),
+      connectedAccountId: account._id.toString(),
       provider: "google",
-      providerMessageId: messageId,
-      subject: encrypt(subject),
-      from: encrypt(from),
-      snippet: encrypt(snippet),
-      body: encrypt(emailBody),
-      matter: matter ? encrypt(matter) : encrypt(""),
-      links: Array.isArray(links) ? links.map(l => encrypt(l)) : [],
-      receivedAt: new Date(parseInt(fullMessage.data.internalDate)),
-      category,
-      aiProcessed: true,
-      expiresAt,
-    };
+      messageId,
+      subject,
+      from,
+      snippet,
+      body: emailBody,
+      internalDate: fullMessage.data.internalDate,
+    });
 
-    if (stage === "registration") {
-      let deadlineDate = deadline ? new Date(deadline) : null;
-      if (!deadlineDate || isNaN(deadlineDate.getTime())) {
-        deadlineDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      }
-      const savedEmail = await RegistrationEmail.create({ ...baseDoc, deadlineDate });
+    console.log(`📡 [Sync] Queued for classification: ${subject.substring(0, 60)}`);
+    return "queued";
 
-      // Schedule WhatsApp reminders for this deadline
-      try {
-        await createReminders({
-          userId: account.userId,
-          emailId: savedEmail._id,
-          emailModel: "RegistrationEmail",
-          emailSubject: subject,
-          emailCategory: category,
-          emailMatter: matter || "",
-          deadlineDate,
-        });
-      } catch (reminderErr) {
-        console.error("⚠️ Reminder creation failed (non-blocking):", reminderErr.message);
-      }
-    } else if (stage === "inprogress") {
-      // InProgress emails (interviews, assessments) also get deadlines
-      let deadlineDate = deadline ? new Date(deadline) : null;
-      if (!deadlineDate || isNaN(deadlineDate.getTime())) {
-        deadlineDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-      }
-      const savedEmail = await InProgressEmail.create({ ...baseDoc, deadlineDate });
-
-      try {
-        await createReminders({
-          userId: account.userId,
-          emailId: savedEmail._id,
-          emailModel: "InProgressEmail",
-          emailSubject: subject,
-          emailCategory: category,
-          emailMatter: matter || "",
-          deadlineDate,
-        });
-      } catch (reminderErr) {
-        console.error("⚠️ Reminder creation failed (non-blocking):", reminderErr.message);
-      }
-    } else {
-      await Model.create(baseDoc);
-    }
-
-    return "stored";
   } catch (err) {
-    if (err.code === 11000) {
-      return "duplicate";
-    }
     console.error("❌ Process message error:", err.message);
     return "error";
   }

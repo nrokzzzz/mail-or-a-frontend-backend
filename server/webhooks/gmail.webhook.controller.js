@@ -1,16 +1,13 @@
 // webhooks/gmail.webhook.controller.js
+//
+// Refactored to use Kafka for fault-tolerant email classification.
+// Instead of calling Gemini AI inline, raw email data is published
+// to the `email-classification` Kafka topic. The Kafka consumer
+// handles classification, storage, and reminder creation with retries.
 
 const ConnectedAccount = require("../modules/connectedAccount/connectedAccount.model");
-const RegistrationEmail = require("../modules/email/registration.model");
-const RegisteredEmail = require("../modules/email/registered.model");
-const InProgressEmail = require("../modules/email/inprogress.model");
-const ConfirmedEmail = require("../modules/email/confirmed.model");
 const { refreshGoogleTokenIfNeeded, getGmailClient } = require("../services/google.service");
-const { encrypt } = require("../utils/crypto");
-const { classifyEmail } = require("../services/emailAI.service");
-const { createReminders } = require("../services/reminderCreator.service");
-
-const THREE_MONTHS_MS = 90 * 24 * 60 * 60 * 1000;
+const { produceEmailForClassification } = require("../services/kafka/emailClassification.producer");
 
 /**
  * Recursively walk MIME parts and extract the full body text.
@@ -63,19 +60,6 @@ function extractBody(payload, snippet = "") {
   return snippet;
 }
 
-const VALID_CATEGORIES = ["job", "internship", "hackathon", "workshop"];
-
-/**
- * Route stage → correct model
- */
-function getModelForStage(stage) {
-  if (stage === "registration") return RegistrationEmail;
-  if (stage === "registered") return RegisteredEmail;
-  if (stage === "inprogress") return InProgressEmail;
-  if (stage === "confirmed") return ConfirmedEmail;
-  return null; // "other" stage — skip
-}
-
 /**
  * Main webhook handler
  */
@@ -126,6 +110,7 @@ exports.handleGmailWebhook = async (req, res) => {
 
 /**
  * Fetch new emails using Gmail History API
+ * Now publishes to Kafka instead of inline classification.
  */
 async function fetchNewEmails(account, newHistoryId) {
   try {
@@ -167,106 +152,28 @@ async function fetchNewEmails(account, newHistoryId) {
           });
 
           const headers = fullMessage.data.payload.headers;
-
           const subject = headers.find((h) => h.name === "Subject")?.value || "";
           const from = headers.find((h) => h.name === "From")?.value || "";
           const snippet = fullMessage.data.snippet || "";
-
-          // Extract full body — recursive MIME traversal
           const emailBody = extractBody(fullMessage.data.payload, snippet);
 
-          // 1️⃣ Classify FIRST — determines category + stage
-          const aiResult = await classifyEmail(subject, snippet);
-          const { category, stage, deadline, matter, links } = aiResult;
-
-          console.log(`🤖 Classified as: [${category}] stage: [${stage}]`);
-
-          // Skip if category is "other" (not a tracked opportunity type)
-          if (!VALID_CATEGORIES.includes(category)) {
-            console.log(`⏭️ Skipping — category: ${category}`);
-            continue;
-          }
-
-          // Skip if stage is "other" (no meaningful action)
-          const Model = getModelForStage(stage);
-          if (!Model) {
-            console.log(`⏭️ Skipping — stage: ${stage}`);
-            continue;
-          }
-
-          const expiresAt = new Date(Date.now() + THREE_MONTHS_MS);
-
-          const baseDoc = {
-            userId: account.userId,
-            connectedAccountId: account._id,
+          // ─── Publish to Kafka for async classification ─────────
+          await produceEmailForClassification({
+            userId: account.userId.toString(),
+            connectedAccountId: account._id.toString(),
             provider: "google",
-            providerMessageId: msg.id,
-            subject: encrypt(subject),
-            from: encrypt(from),
-            snippet: encrypt(snippet),
-            body: encrypt(emailBody),   // full body, encrypted
-            matter: matter ? encrypt(matter) : encrypt(""),
-            links: Array.isArray(links) ? links.map(l => encrypt(l)) : [],
-            receivedAt: new Date(parseInt(fullMessage.data.internalDate)),
-            category,                                 // job | internship | hackathon | workshop
-            aiProcessed: true,
-            expiresAt,
-          };
+            messageId: msg.id,
+            subject,
+            from,
+            snippet,
+            body: emailBody,
+            internalDate: fullMessage.data.internalDate,
+          });
 
-          // 2️⃣ Store in the correct stage schema
-          if (stage === "registration") {
-            let deadlineDate = deadline ? new Date(deadline) : null;
-            if (!deadlineDate || isNaN(deadlineDate.getTime())) {
-              deadlineDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-            }
-            const savedEmail = await RegistrationEmail.create({ ...baseDoc, deadlineDate });
-
-            // Schedule WhatsApp reminders
-            try {
-              await createReminders({
-                userId: account.userId,
-                emailId: savedEmail._id,
-                emailModel: "RegistrationEmail",
-                emailSubject: subject,
-                emailCategory: category,
-                emailMatter: matter || "",
-                deadlineDate,
-              });
-            } catch (reminderErr) {
-              console.error("⚠️ Reminder creation failed (non-blocking):", reminderErr.message);
-            }
-          } else if (stage === "inprogress") {
-            let deadlineDate = deadline ? new Date(deadline) : null;
-            if (!deadlineDate || isNaN(deadlineDate.getTime())) {
-              deadlineDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
-            }
-            const savedEmail = await InProgressEmail.create({ ...baseDoc, deadlineDate });
-
-            try {
-              await createReminders({
-                userId: account.userId,
-                emailId: savedEmail._id,
-                emailModel: "InProgressEmail",
-                emailSubject: subject,
-                emailCategory: category,
-                emailMatter: matter || "",
-                deadlineDate,
-              });
-            } catch (reminderErr) {
-              console.error("⚠️ Reminder creation failed (non-blocking):", reminderErr.message);
-            }
-          } else {
-            await Model.create(baseDoc);
-          }
-
-          console.log(`✅ Stored [${category} / ${stage}]:`, subject);
+          console.log(`📡 [Webhook] Queued for classification: ${subject.substring(0, 60)}`);
 
         } catch (err) {
-          if (err.code === 11000) {
-            console.log("⚠️ Duplicate skipped:", msg.id);
-          } else {
-            console.error("❌ Email processing error:", err.message);
-          }
+          console.error("❌ Email queuing error:", err.message);
         }
       }
     }
