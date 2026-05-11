@@ -1,4 +1,4 @@
-# Mailora 2.0 — System Architecture Document
+# Mailora— System Architecture Document
 
 > Comprehensive architecture documentation covering system design, data flow, security model, and deployment topology.
 
