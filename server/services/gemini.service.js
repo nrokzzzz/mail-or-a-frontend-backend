@@ -1,7 +1,17 @@
+/**
+ * Gemini AI Resume Extraction Service
+ *
+ * Uses Google Gemini AI SDK (@google/generative-ai) to extract structured
+ * profile data from resume text (skills, experience, education, etc.).
+ *
+ * AI Library: @google/generative-ai (imported below)
+ * AI Model:   gemini-2.5-flash
+ * Invocation: model.generateContent(prompt) → JSON.parse(result.response.text())
+ */
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const logger = require("../utils/logger");
 
-// Initialize the SDK with your API Key
+// Initialize Google Generative AI SDK with API Key
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 exports.extractProfileData = async (resumeText) => {
