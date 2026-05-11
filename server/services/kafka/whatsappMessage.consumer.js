@@ -12,11 +12,21 @@ const axios = require("axios");
 const { createConsumer, TOPICS } = require("../../config/kafka");
 const { sendToDLQ } = require("./dlq.handler");
 const Reminder = require("../../modules/reminder/reminder.model");
+const CircuitBreaker = require("../../utils/circuitBreaker");
 const logger = require("../../utils/logger");
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || "https://whatsapp.mail-or-a.dev";
 const MAX_RETRIES = 5;
 const BASE_BACKOFF_MS = 1000; // 1s, 2s, 4s, 8s, 16s
+const HTTP_TIMEOUT_MS = 15000;
+
+// Circuit breaker: opens after 5 failures, retries after 30s
+const whatsappBreaker = new CircuitBreaker({
+  name: "WhatsAppService",
+  failureThreshold: 5,
+  resetTimeoutMs: 30000,
+  successThreshold: 2,
+});
 
 /**
  * Process a single WhatsApp message with retry logic.
@@ -35,11 +45,13 @@ async function processWhatsAppMessage(messagePayload) {
 
   while (retryCount <= MAX_RETRIES) {
     try {
-      // ─── Send via WhatsApp Service ──────────────────────────────
-      const response = await axios.post(
-        `${WHATSAPP_SERVICE_URL}/api/send`,
-        { number: whatsappNumber, message },
-        { timeout: 15000 }
+      // ─── Send via WhatsApp Service (circuit-breaker protected) ──
+      const response = await whatsappBreaker.call(() =>
+        axios.post(
+          `${WHATSAPP_SERVICE_URL}/api/send`,
+          { number: whatsappNumber, message },
+          { timeout: HTTP_TIMEOUT_MS }
+        )
       );
 
       if (response.data.success) {

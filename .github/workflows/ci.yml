@@ -3,7 +3,7 @@
 #
 # Triggers: Push to main/develop, Pull requests
 # Jobs:
-#   1. Lint & Test (server)
+#   1. Lint & Test with Coverage (server)
 #   2. Build Check (client)
 #   3. Docker Build Verification
 # ──────────────────────────────────────────────────────────────────────────────
@@ -20,9 +20,9 @@ env:
   NODE_VERSION: "20"
 
 jobs:
-  # ─── Server: Lint + Test ──────────────────────────────────────────────────
+  # ─── Server: Lint + Test + Coverage ────────────────────────────────────────
   server-test:
-    name: Server Tests
+    name: Server Tests & Coverage
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -42,12 +42,20 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
+      - name: Run tests with coverage
+        run: npm test -- --coverage --coverageReporters=text --coverageReporters=lcov
         env:
           JWT_SECRET: ci-test-jwt-secret
           EMAIL_ENCRYPTION_KEY: ci-test-encryption-key
           NODE_ENV: test
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-coverage
+          path: server/coverage/lcov-report
+          retention-days: 14
 
   # ─── Client: Build Check ─────────────────────────────────────────────────
   client-build:
@@ -89,6 +97,12 @@ jobs:
         run: |
           docker build -f server/Dockerfile -t mailora-server:ci .
 
-      - name: Verify health check
+      - name: Build client Docker image
         run: |
-          echo "Docker image built successfully"
+          docker build -f client/Dockerfile -t mailora-client:ci client/
+
+      - name: Verify images built
+        run: |
+          docker images mailora-server:ci
+          docker images mailora-client:ci
+          echo "Docker images built and verified successfully"

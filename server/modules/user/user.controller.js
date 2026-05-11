@@ -396,7 +396,7 @@ exports.sendMobileOtp = asyncHandler(async (req, res) => {
   const hashedOtp = await bcrypt.hash(otp, 10);
 
   user.mobileOtp = hashedOtp;
-  user.mobileOtpExpiry = new Date(Date.now() + 90 * 1000); // 1 min 30 sec
+  user.mobileOtpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 min
   user.countryCode = countryCode;
   user.mobileNumber = rawNumber;
   user.isMobileVerified = false;
@@ -416,7 +416,7 @@ exports.sendMobileOtp = asyncHandler(async (req, res) => {
   try {
     await axios.post(`${whatsappUrl}/api/send`, {
       number: fullNumber,
-      message: `🔐 Your Mail-or-a verification OTP is: *${otp}*\n\nThis code expires in 1 minute 30 seconds. Do not share it with anyone.`
+      message: `🔐 Your Mail-or-a verification OTP is: *${otp}*\n\nThis code expires in 5 minutes. Do not share it with anyone.`
     });
   } catch (whatsappErr) {
     logger.error("User", "WhatsApp send failed", whatsappErr.message);

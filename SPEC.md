@@ -29,7 +29,7 @@ The email classification pipeline works in five steps:
 4. The classified content is encrypted and stored in the correct MongoDB collection based on its stage (`server/modules/email/registration.model.js`, `registered.model.js`, `inprogress.model.js`, `confirmed.model.js`)
 5. If a deadline is detected, reminder documents are created (`server/services/reminderCreator.service.js`) and later processed by a cron job (`server/services/reminderScheduler.service.js`) that sends them through the WhatsApp microservice via Kafka
 
-AI integration uses the `@google/generative-ai` SDK (version ^0.24.1). It is imported in `server/services/emailAI.service.js` as `const { GoogleGenerativeAI } = require("@google/generative-ai")`, instantiated as `new GoogleGenerativeAI(process.env.GEMINI_API_KEY)`, and invoked via `model.generateContent(prompt)` to classify emails. The same SDK is used in `server/services/gemini.service.js` for resume skill extraction. Gemini AI calls are wrapped in a circuit breaker (`server/utils/circuitBreaker.js`) that opens after 5 consecutive failures and recovers after 30 seconds.
+AI integration uses the `@google/generative-ai` SDK (version ^0.24.1). It is imported in `server/services/emailAI.service.js` as `const { GoogleGenerativeAI } = require("@google/generative-ai")`, instantiated as `new GoogleGenerativeAI(process.env.GEMINI_API_KEY)`, and invoked via `model.generateContent(prompt)` to classify emails. The same SDK is used in `server/services/gemini.service.js` for resume skill extraction. Gemini AI calls are wrapped in a circuit breaker (`server/utils/circuitBreaker.js`) that opens after 5 consecutive failures and recovers after 30 seconds. WhatsApp service HTTP calls are also wrapped in a separate circuit breaker instance (`server/services/kafka/whatsappMessage.consumer.js`) to prevent cascading failures when the WhatsApp microservice is unavailable.
 
 Failed messages are retried up to five times with exponential backoff (1s, 2s, 4s, 8s, 16s). If they still fail, they are sent to a Dead Letter Queue topic (`server/services/kafka/dlq.handler.js`) and stored in a `failedmessages` collection (`server/modules/failedMessage/failedMessage.model.js`) for review.
 
@@ -67,7 +67,7 @@ The server implements graceful shutdown by disconnecting Kafka consumers, the Ka
 - node-cron 4 — Scheduled reminder checks every 5 minutes
 - pdf-parse — PDF resume text extraction
 - Mammoth — DOCX resume text extraction
-- AES-256-CBC (Node.js crypto) — Field-level encryption at rest for email content and OAuth tokens
+- AES-256-GCM (Node.js crypto) — Authenticated field-level encryption at rest for email content and OAuth tokens (with backward-compatible AES-256-CBC decryption for legacy data)
 - AWS SDK (S3) — Resume and photo file storage
 
 ### Infrastructure
@@ -94,7 +94,7 @@ The current version (v2.0) includes:
 5. Logout endpoint (`POST /api/auth/logout`) that clears the JWT cookie
 6. Gmail account connection with real-time webhook monitoring via Pub/Sub (up to 3 accounts)
 7. AI-powered email classification using Google Gemini AI 2.5 Flash (`@google/generative-ai` SDK) into 4 categories (job, internship, hackathon, workshop) and 4 stages (registration, registered, in-progress, confirmed)
-8. Encrypted email storage using AES-256-CBC with random IVs and 90-day auto-expiry via MongoDB TTL index
+8. Encrypted email storage using AES-256-GCM (authenticated encryption with random IVs) and 90-day auto-expiry via MongoDB TTL index. Backward-compatible decryption of legacy AES-256-CBC ciphertext.
 9. Paginated dashboard with category and stage filters using MongoDB `$unionWith` cross-collection aggregation
 10. Automatic WhatsApp reminder scheduling based on AI-extracted deadlines at intervals (3 days, 24h, 12h, 1h before)
 11. WhatsApp number verification via OTP
@@ -110,8 +110,12 @@ The current version (v2.0) includes:
 21. Graceful server shutdown (SIGTERM/SIGINT → Kafka → MongoDB disconnect)
 22. Docker Compose deployment with 6 services and health checks
 23. GitHub Actions CI/CD pipeline (server tests, client build, Docker verification)
-24. OAuth token encryption at rest in ConnectedAccount collection using AES-256-CBC with `enc:` prefix markers
+24. OAuth token encryption at rest in ConnectedAccount collection using AES-256-GCM with `enc:` prefix markers and Mongoose pre/post hooks
 25. React frontend with code splitting (`React.lazy`), ErrorBoundary, and Framer Motion animations
+26. Automated Gmail Pub/Sub watch renewal via `node-cron` every 6 hours (`server/services/watchRenewal.service.js`) — prevents silent loss of real-time email notifications
+27. Circuit breaker pattern on WhatsApp service HTTP calls (in addition to Gemini AI) — opens after 5 failures, 30s recovery
+28. Test coverage enforcement via Jest with minimum thresholds (70% lines/functions/statements)
+29. Await-based boot sequence — database connection is confirmed before accepting HTTP traffic
 
 ---
 
@@ -141,7 +145,7 @@ The current version does not include:
 - **Browser Push Notifications**: Add Web Push API as an alternative notification channel alongside WhatsApp reminders. The reminder scheduler can be extended to publish to a new Kafka topic.
 - **Analytics Dashboard**: Track application trends, deadline compliance rates, and category distribution with interactive charts using Recharts.
 - **Smart Job Recommendations**: Use extracted resume skills to filter and recommend matching jobs from the SerpAPI service. The `extractedSkills` field already exists on the User model.
-- **Gmail Watch Renewal**: Automated cron-based renewal of Gmail Pub/Sub subscriptions before the 7-day expiry via `node-cron`.
+- **~~Gmail Watch Renewal~~**: ✅ Implemented in v2.0 — Automated cron-based renewal of Gmail Pub/Sub subscriptions before the 7-day expiry via `node-cron` (`server/services/watchRenewal.service.js`).
 
 ### Medium-Term (v3.0)
 - **Calendar Synchronization**: Sync detected deadlines and interview dates to Google Calendar and Outlook Calendar via their respective APIs. Extensible via the Kafka topic registry.

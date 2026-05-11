@@ -64,6 +64,11 @@ const connectedAccountSchema = new mongoose.Schema(
       type: Date,
     },
 
+    // Gmail Pub/Sub watch expiry (7-day cycle, auto-renewed via cron)
+    watchExpiry: {
+      type: Date,
+    },
+
     isActive: {
       type: Boolean,
       default: true,

@@ -109,9 +109,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5002:5002"
+    depends_on:
+      kafka:
+        condition: service_healthy
     env_file:
       - whatsapp-service/.env
     environment:
+      - KAFKA_BROKERS=kafka:29092
       - NODE_ENV=development
     restart: unless-stopped
 
@@ -122,9 +126,13 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5001:5001"
+    depends_on:
+      kafka:
+        condition: service_healthy
     env_file:
       - serpapiservice/.env
     environment:
+      - KAFKA_BROKERS=kafka:29092
       - NODE_ENV=development
     restart: unless-stopped
 

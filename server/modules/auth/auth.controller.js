@@ -15,7 +15,6 @@ const PendingVerification = require("./pendingVerification.model");
 const bcrypt = require("bcryptjs");
 const { generateToken, setAuthCookie } = require("../../utils/auth");
 const { encrypt, decrypt, generateOtp } = require("../../utils/crypto");
-const { validateEmail, validatePassword, validateOtp } = require("../../utils/validators");
 const { sendSignupOtpEmail, sendResetPasswordEmail, sendChangePasswordEmail } = require("../../services/otp.email.service");
 const { getPresignedUrl } = require("../../services/s3.service");
 const asyncHandler = require("../../utils/asyncHandler");
@@ -28,11 +27,7 @@ const logger = require("../../utils/logger");
 // Sends OTP to email — no user created yet
 exports.sendSignupOtp = asyncHandler(async (req, res) => {
   const { email } = req.body;
-
-  const emailCheck = validateEmail(email);
-  if (!emailCheck.valid) {
-    return sendError(res, 400, emailCheck.message);
-  }
+  // Note: Joi validateBody(joiSchemas.sendSignupOtp) in auth.routes.js already validates email format
 
   const existingUser = await User.findOne({ email });
   if (existingUser) {
@@ -41,7 +36,7 @@ exports.sendSignupOtp = asyncHandler(async (req, res) => {
 
   const otp       = generateOtp();
   const hashedOtp = await bcrypt.hash(otp, 10);
-  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 min
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 min
 
   // Upsert — resend if user requests OTP again for the same email
   await PendingVerification.findOneAndUpdate(
@@ -52,7 +47,7 @@ exports.sendSignupOtp = asyncHandler(async (req, res) => {
 
   await sendSignupOtpEmail(email, otp);
 
-  sendSuccess(res, 200, "OTP sent to your email. It is valid for 10 minutes.");
+  sendSuccess(res, 200, "OTP sent to your email. It is valid for 5 minutes.");
 });
 
 // ─── Step 2: Signup (OTP verified → User created) ────────────────────────────
@@ -62,24 +57,8 @@ exports.sendSignupOtp = asyncHandler(async (req, res) => {
 exports.signup = asyncHandler(async (req, res) => {
   const { name, email, password, otp } = req.body;
 
-  if (!name || !email || !password || !otp) {
-    return sendError(res, 400, "Name, email, password and OTP are required.");
-  }
-
-  const emailCheck = validateEmail(email);
-  if (!emailCheck.valid) {
-    return sendError(res, 400, emailCheck.message);
-  }
-
-  const pwdCheck = validatePassword(password);
-  if (!pwdCheck.valid) {
-    return sendError(res, 400, pwdCheck.message);
-  }
-
-  const otpCheck = validateOtp(otp);
-  if (!otpCheck.valid) {
-    return sendError(res, 400, otpCheck.message);
-  }
+  // Note: Joi validateBody(joiSchemas.signup) in auth.routes.js already validates
+  // name, email, password, and OTP format — no need for duplicate manual checks
 
   // Check OTP record exists
   const pending = await PendingVerification.findOne({ email });
