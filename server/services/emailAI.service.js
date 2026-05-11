@@ -1,10 +1,26 @@
+/**
+ * Email AI Classification Service
+ *
+ * Classifies emails using Google Gemini AI with a circuit breaker
+ * to prevent cascading failures when the API is unavailable.
+ */
+
 const { GoogleGenerativeAI } = require("@google/generative-ai");
+const CircuitBreaker = require("../utils/circuitBreaker");
 const logger = require("../utils/logger");
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+// Circuit breaker: opens after 5 failures, retries after 30s
+const geminiBreaker = new CircuitBreaker({
+  name: "GeminiAI",
+  failureThreshold: 5,
+  resetTimeoutMs: 30000,
+  successThreshold: 2,
+});
+
 exports.classifyEmail = async (subject, body) => {
-  try {
+  return geminiBreaker.call(async () => {
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
       generationConfig: { responseMimeType: "application/json" },
@@ -52,8 +68,8 @@ Body: ${body}
     const result = await model.generateContent(prompt);
 
     return JSON.parse(result.response.text());
-  } catch (error) {
-    logger.error("EmailAI", "Gemini Classification Error", error);
-    throw error;
-  }
+  });
 };
+
+/** Expose circuit breaker state for health checks */
+exports.getCircuitBreakerState = () => geminiBreaker.getState();

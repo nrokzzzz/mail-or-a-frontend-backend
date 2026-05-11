@@ -87,17 +87,21 @@ connectedAccountSchema.index(
 
 // ─── Encryption Hooks ───────────────────────────────────────────────────────
 
+// Prefix used to mark already-encrypted tokens.
+// This is more reliable than checking for `:` which can appear in OAuth tokens.
+const ENCRYPTED_PREFIX = "enc:";
+
 /**
  * Pre-save hook: encrypt accessToken and refreshToken before persisting.
- * Uses an internal flag to avoid double-encryption on repeated saves.
+ * Uses a prefix marker to avoid double-encryption on repeated saves.
  */
 connectedAccountSchema.pre("save", function (next) {
   // Only encrypt if tokens were modified and aren't already encrypted
-  if (this.isModified("accessToken") && this.accessToken && !this.accessToken.includes(":")) {
-    this.accessToken = encrypt(this.accessToken);
+  if (this.isModified("accessToken") && this.accessToken && !this.accessToken.startsWith(ENCRYPTED_PREFIX)) {
+    this.accessToken = ENCRYPTED_PREFIX + encrypt(this.accessToken);
   }
-  if (this.isModified("refreshToken") && this.refreshToken && !this.refreshToken.includes(":")) {
-    this.refreshToken = encrypt(this.refreshToken);
+  if (this.isModified("refreshToken") && this.refreshToken && !this.refreshToken.startsWith(ENCRYPTED_PREFIX)) {
+    this.refreshToken = ENCRYPTED_PREFIX + encrypt(this.refreshToken);
   }
   this._tokensEncrypted = true;
   next();
@@ -108,11 +112,11 @@ connectedAccountSchema.pre("save", function (next) {
  * This ensures tokens are usable in-memory without manual decryption.
  */
 connectedAccountSchema.post("init", function (doc) {
-  if (doc.accessToken && doc.accessToken.includes(":")) {
-    doc.accessToken = decrypt(doc.accessToken);
+  if (doc.accessToken && doc.accessToken.startsWith(ENCRYPTED_PREFIX)) {
+    doc.accessToken = decrypt(doc.accessToken.slice(ENCRYPTED_PREFIX.length));
   }
-  if (doc.refreshToken && doc.refreshToken.includes(":")) {
-    doc.refreshToken = decrypt(doc.refreshToken);
+  if (doc.refreshToken && doc.refreshToken.startsWith(ENCRYPTED_PREFIX)) {
+    doc.refreshToken = decrypt(doc.refreshToken.slice(ENCRYPTED_PREFIX.length));
   }
 });
 

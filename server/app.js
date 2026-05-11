@@ -14,9 +14,11 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
+const mongoose = require("mongoose");
 const AppError = require("./utils/AppError");
 const logger = require("./utils/logger");
 const { generalLimiter, webhookLimiter } = require("./middlewares/rateLimiter.middleware");
+const { getCircuitBreakerState } = require("./services/emailAI.service");
 
 const app = express();
 
@@ -52,7 +54,27 @@ app.get("/", (_req, res) => {
 });
 
 app.get("/health", (_req, res) => {
-  res.json({ status: "ok", timestamp: new Date().toISOString() });
+  const mongoState = mongoose.connection.readyState;
+  const mongoStatus = {
+    0: "disconnected",
+    1: "connected",
+    2: "connecting",
+    3: "disconnecting",
+  }[mongoState] || "unknown";
+
+  const geminiCircuit = getCircuitBreakerState();
+
+  const isHealthy = mongoState === 1;
+
+  res.status(isHealthy ? 200 : 503).json({
+    status: isHealthy ? "ok" : "degraded",
+    timestamp: new Date().toISOString(),
+    uptime: Math.floor(process.uptime()),
+    dependencies: {
+      mongodb: mongoStatus,
+      geminiAI: geminiCircuit,
+    },
+  });
 });
 
 // ─── API v1 Routes ──────────────────────────────────────────────────────────
@@ -84,7 +106,7 @@ app.use("/api/v1", v1Router);
 app.use("/api", v1Router);
 
 // ─── Webhooks (not versioned — external services call these) ────────────────
-app.use("/webhook", webhookLimiter, require("./webhooks/gmail.webhook"));
+app.use("/webhook", express.json({ limit: "1mb" }), webhookLimiter, require("./webhooks/gmail.webhook"));
 
 // ─── 404 Handler ────────────────────────────────────────────────────────────
 app.all("*", (req, _res, next) => {

@@ -5,6 +5,7 @@
 #   docker-compose up --build
 #
 # Services:
+#   - client:           React SPA served via Nginx
 #   - server:           Main Express API + Kafka consumers
 #   - whatsapp-service: WhatsApp messaging microservice
 #   - serpapiservice:   Job search microservice (SerpAPI)
@@ -85,7 +86,20 @@ services:
       - MONGO_URI=mongodb://mongo:27017/mailora
       - WHATSAPP_SERVICE_URL=http://whatsapp-service:5002
       - NODE_ENV=development
-      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost:80
+    restart: unless-stopped
+
+  # ─── Client (React + Nginx) ─────────────────────────────────────────────
+  client:
+    build:
+      context: client
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+    environment:
+      - NODE_ENV=production
     restart: unless-stopped
 
   # ─── WhatsApp Microservice ──────────────────────────────────────────────
