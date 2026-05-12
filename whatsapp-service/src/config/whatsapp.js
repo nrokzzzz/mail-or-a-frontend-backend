@@ -1,5 +1,6 @@
 const { Client, LocalAuth } = require("whatsapp-web.js");
 const qrcode = require("qrcode-terminal");
+const logger = require("../utils/logger");
 
 // ─── WhatsApp Client Configuration ──────────────────────────────────────────
 // LocalAuth persists the session in .wwebjs_auth/ so QR scan is only
@@ -20,30 +21,29 @@ const client = new Client({
 
 // Display QR code in the terminal (first run only)
 client.on("qr", (qr) => {
-  console.log("\n╔════════════════════════════════════════════╗");
-  console.log("║   Scan QR code below with WhatsApp app    ║");
-  console.log("╚════════════════════════════════════════════╝\n");
+  logger.info("WhatsApp", "Scan QR code below with WhatsApp app");
   qrcode.generate(qr, { small: true });
 });
 
 // Session has been saved/restored successfully
 client.on("authenticated", () => {
-  console.log("✅ WhatsApp session authenticated & saved.");
+  logger.info("WhatsApp", "Session authenticated & saved");
 });
 
 // Client is fully ready to send/receive messages
 client.on("ready", () => {
-  console.log("🟢 WhatsApp client is ready!");
+  logger.info("WhatsApp", "Client is ready");
 });
 
 // Authentication failed (session corrupt, revoked, etc.)
 client.on("auth_failure", (msg) => {
-  console.error("❌ WhatsApp auth failure:", msg);
+  logger.error("WhatsApp", "Auth failure", msg);
 });
 
 // Client got disconnected
 client.on("disconnected", (reason) => {
-  console.warn("⚠️  WhatsApp disconnected:", reason);
+  logger.warn("WhatsApp", "Disconnected", reason);
 });
 
 module.exports = client;
+

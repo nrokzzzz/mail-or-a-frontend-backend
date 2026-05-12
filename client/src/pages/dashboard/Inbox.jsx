@@ -6,6 +6,7 @@ const Inbox = ({ selectedFilter, selectedSubFilter }) => {
   const [loading, setLoading] = useState(true);
   const [selectedMail, setSelectedMail] = useState(null);
   const [deletingId, setDeletingId] = useState(null);
+  const [deleteConfirm, setDeleteConfirm] = useState(null); // { mail, event } for confirm dialog
 
   useEffect(() => {
     const fetchEmails = async () => {
@@ -23,23 +24,28 @@ const Inbox = ({ selectedFilter, selectedSubFilter }) => {
     fetchEmails();
   }, []);
 
-  // Delete handler
-  const handleDelete = async (mail, e) => {
+  // Delete handler — shows custom confirmation modal instead of window.confirm()
+  const handleDelete = (mail, e) => {
     if (e) e.stopPropagation(); // prevent card click from opening modal
-    if (!confirm(`Delete "${mail.subject || "(No Subject)"}"?\nThis will also cancel any pending WhatsApp reminders for this email.`)) return;
+    setDeleteConfirm({ mail });
+  };
 
+  // Actual delete — called when user confirms deletion in the modal
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+    const { mail } = deleteConfirm;
+    setDeleteConfirm(null);
     setDeletingId(mail._id);
     try {
       await axiosClient.delete(`/api/emails/${mail.type}/${mail._id}`);
       // Optimistically remove from state
       setMails((prev) => prev.filter((m) => m._id !== mail._id));
-      // Close modal if this mail was open
+      // Close detail modal if this mail was open
       if (selectedMail && selectedMail._id === mail._id) {
         setSelectedMail(null);
       }
     } catch (err) {
       console.error("Failed to delete email:", err);
-      alert("Failed to delete email. Please try again.");
     } finally {
       setDeletingId(null);
     }
@@ -252,9 +258,52 @@ const Inbox = ({ selectedFilter, selectedSubFilter }) => {
           </div>
         </div>
       )}
+
+      {/* ─── Delete Confirmation Modal (replaces window.confirm) ─── */}
+      {deleteConfirm && (
+        <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>
+          <div
+            className="modal-box"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: '420px', textAlign: 'center', padding: '32px' }}
+          >
+            <div style={{ fontSize: '2.5em', marginBottom: '12px' }}>⚠️</div>
+            <h3 style={{ margin: '0 0 8px 0', fontSize: '1.2em' }}>Confirm Delete</h3>
+            <p style={{ color: 'var(--text-secondary, #666)', margin: '0 0 6px 0', lineHeight: '1.5', fontSize: '0.95em' }}>
+              Delete <strong>"{deleteConfirm.mail.subject || '(No Subject)'}"</strong>?
+            </p>
+            <p style={{ color: 'var(--text-secondary, #888)', margin: '0 0 24px 0', fontSize: '0.85em' }}>
+              This will also cancel any pending WhatsApp reminders for this email.
+            </p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setDeleteConfirm(null)}
+                style={{
+                  flex: 1, padding: '10px', border: '1px solid var(--border-color, #ddd)',
+                  background: 'transparent', color: 'var(--text-primary)', borderRadius: '8px',
+                  cursor: 'pointer', fontWeight: '600', fontSize: '0.9em', transition: 'all 0.2s'
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmDelete}
+                style={{
+                  flex: 1, padding: '10px', border: 'none',
+                  background: '#e53e3e', color: '#fff', borderRadius: '8px',
+                  cursor: 'pointer', fontWeight: '600', fontSize: '0.9em', transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#c53030'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#e53e3e'; }}
+              >
+                🗑️ Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default Inbox;
-

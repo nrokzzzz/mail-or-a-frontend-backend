@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const messageRoutes = require("./routes/messageRoutes");
+const logger = require("./utils/logger");
 
 // ─── Express App Setup ──────────────────────────────────────────────────────
 const app = express();
@@ -36,7 +37,7 @@ app.use((req, res) => {
 
 // Global error handler
 app.use((err, req, res, next) => {
-  console.error("Unhandled error:", err.message);
+  logger.error("App", "Unhandled error", err);
   res.status(500).json({
     success: false,
     error: "Internal server error",

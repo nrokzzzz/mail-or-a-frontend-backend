@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./JobTable.css";
 
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
 function JobsTable() {
   const [jobsData, setJobsData] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -17,7 +19,7 @@ function JobsTable() {
 
   // Fetch Roles for dropdown
   useEffect(() => {
-    fetch("https://server.mail-or-a.dev/api/jobs/roles")
+    fetch(`${API_URL}/api/jobs/roles`)
       .then(res => res.json())
       .then(data => {
         if (data.success) {
@@ -30,7 +32,7 @@ function JobsTable() {
   // Fetch Jobs whenever page, selectedRole, or selectedType changes
   useEffect(() => {
     setLoading(true);
-    let url = `https://server.mail-or-a.dev/api/jobs/search?page=${page}&limit=${limit}`;
+    let url = `${API_URL}/api/jobs/search?page=${page}&limit=${limit}`;
     if (selectedRole) {
       url += `&role=${encodeURIComponent(selectedRole)}`;
     }
