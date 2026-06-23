@@ -687,20 +687,6 @@ body.light-theme .connected-mail-icon { background: #fff; border: 1px solid #ddd
 .connected-mail-item:hover .connected-mail-remove { opacity: 0.6; }
 .connected-mail-remove:hover { opacity: 1 !important; color: #ef4743; }
 
-.connected-mail-sync {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 4px;
-  opacity: 0;
-  transition: opacity 0.15s;
-  font-size: 14px;
-  line-height: 1;
-}
-.connected-mail-item:hover .connected-mail-sync { opacity: 0.6; }
-.connected-mail-sync:hover { opacity: 1 !important; }
-.connected-mail-sync:disabled { cursor: wait; opacity: 0.8 !important; animation: profileSpin 1s linear infinite; }
-
 .connected-mail-add {
   display: flex;
   gap: 8px;

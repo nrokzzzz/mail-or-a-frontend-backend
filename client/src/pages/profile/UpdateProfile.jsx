@@ -45,7 +45,6 @@ export default function UpdateProfile() {
 
   // Connected Google Accounts
   const [connectedAccounts, setConnectedAccounts] = useState([]);
-  const [syncingAccountId, setSyncingAccountId] = useState(null);
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Resume Upload State
@@ -223,18 +222,6 @@ export default function UpdateProfile() {
       setConnectedAccounts(prev => prev.filter(a => a._id !== accountId));
     } catch (err) {
       alert(err.response?.data?.message || "Failed to disconnect account");
-    }
-  };
-
-  const handleSyncAccount = async (accountId) => {
-    setSyncingAccountId(accountId);
-    try {
-      const res = await axiosClient.post(`/api/accounts/${accountId}/sync`);
-      alert(`✅ Sync complete! ${res.data.processed} emails processed, ${res.data.skipped} skipped.`);
-    } catch (err) {
-      alert(err.response?.data?.message || "Sync failed");
-    } finally {
-      setSyncingAccountId(null);
     }
   };
 
@@ -773,15 +760,7 @@ export default function UpdateProfile() {
                     <img src="https://www.svgrepo.com/show/475656/google-color.svg" width="16" height="16" alt="Google" />
                   </div>
                   <span className="connected-mail-address">{account.emailAddress}</span>
-                  <button 
-                    onClick={() => handleSyncAccount(account._id)}
-                    className="connected-mail-sync"
-                    title="Sync emails now"
-                    disabled={syncingAccountId === account._id}
-                  >
-                    {syncingAccountId === account._id ? "⏳" : "🔄"}
-                  </button>
-                  <button 
+                  <button
                     onClick={() => handleDisconnectAccount(account._id)}
                     className="connected-mail-remove"
                     title="Disconnect"

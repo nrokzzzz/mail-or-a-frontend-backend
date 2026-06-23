@@ -13,6 +13,7 @@ const logger = require("./utils/logger");
 const { startReminderWorker, stopReminderWorker } = require("./services/reminderWorker.service");
 const { reconcilePendingReminders, closeReminderQueue } = require("./services/reminderQueue.service");
 const { startWatchRenewalScheduler } = require("./services/watchRenewal.service");
+const { startAutoSyncScheduler } = require("./services/gmailSync.service");
 const { ensureTopics, TOPICS, disconnectKafka } = require("./config/kafka");
 const { startEmailClassificationConsumer } = require("./services/kafka/emailClassification.consumer");
 const { startWhatsAppMessageConsumer } = require("./services/kafka/whatsappMessage.consumer");
@@ -79,6 +80,10 @@ const PORT = process.env.PORT || 5000;
 
   // Start Gmail watch renewal cron (checks every 6 hours — v2.1 enhancement)
   startWatchRenewalScheduler();
+
+  // Start Gmail auto-sync backfill (every 20 min — catches any push the webhook
+  // missed during downtime / watch lapse / history expiry). Replaces manual sync.
+  startAutoSyncScheduler();
   });
 
   // ─── Graceful Shutdown ──────────────────────────────────────────────────────

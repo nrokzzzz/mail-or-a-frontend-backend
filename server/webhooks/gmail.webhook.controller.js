@@ -7,9 +7,7 @@
 
 const ConnectedAccount = require("../modules/connectedAccount/connectedAccount.model");
 const { refreshGoogleTokenIfNeeded, getGmailClient } = require("../services/google.service");
-const { produceEmailForClassification } = require("../services/kafka/emailClassification.producer");
-
-const { extractBody } = require("../utils/emailParser");
+const { processMessage, syncRecentMessages } = require("../services/gmailSync.service");
 const logger = require("../utils/logger");
 
 /**
@@ -77,10 +75,24 @@ async function fetchNewEmails(account, newHistoryId) {
     const oauthClient = await refreshGoogleTokenIfNeeded(account);
     const gmail = getGmailClient(oauthClient);
 
-    const historyResponse = await gmail.users.history.list({
-      userId: "me",
-      startHistoryId: account.lastHistoryId,
-    });
+    let historyResponse;
+    try {
+      historyResponse = await gmail.users.history.list({
+        userId: "me",
+        startHistoryId: account.lastHistoryId,
+      });
+    } catch (histErr) {
+      // History cursor too old/expired → fall back to recent messages so the
+      // push isn't silently dropped (the same recovery the auto-sync uses).
+      if (histErr.code === 404 || histErr.message?.includes("historyId")) {
+        logger.warn("Webhook", "History expired, falling back to recent messages");
+        await syncRecentMessages(gmail, account);
+        account.lastHistoryId = newHistoryId;
+        await account.save();
+        return;
+      }
+      throw histErr;
+    }
 
     if (!historyResponse.data.history) {
       account.lastHistoryId = newHistoryId;
@@ -97,36 +109,8 @@ async function fetchNewEmails(account, newHistoryId) {
         // Only process INBOX messages
         if (!msg.labelIds || !msg.labelIds.includes("INBOX")) continue;
 
-        try {
-          const fullMessage = await gmail.users.messages.get({
-            userId: "me",
-            id: msg.id,
-          });
-
-          const headers = fullMessage.data.payload.headers;
-          const subject = headers.find((h) => h.name === "Subject")?.value || "";
-          const from = headers.find((h) => h.name === "From")?.value || "";
-          const snippet = fullMessage.data.snippet || "";
-          const emailBody = extractBody(fullMessage.data.payload, snippet);
-
-          // ─── Publish to Kafka for async classification ─────────
-          await produceEmailForClassification({
-            userId: account.userId.toString(),
-            connectedAccountId: account._id.toString(),
-            provider: "google",
-            messageId: msg.id,
-            subject,
-            from,
-            snippet,
-            body: emailBody,
-            internalDate: fullMessage.data.internalDate,
-          });
-
-          logger.info("Webhook", `Queued for classification: ${subject.substring(0, 60)}`);
-
-        } catch (err) {
-          logger.error("Webhook", "Email queuing error", err);
-        }
+        // Extract + publish to Kafka for async classification (shared logic).
+        await processMessage(gmail, msg.id, account);
       }
     }
 

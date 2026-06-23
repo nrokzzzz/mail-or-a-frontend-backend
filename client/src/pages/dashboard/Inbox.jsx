@@ -90,7 +90,7 @@ const Inbox = ({ selectedFilter, selectedSubFilter }) => {
         {filtered.length === 0 ? (
           <div className="no-mails" style={{ textAlign: 'center', padding: '40px', color: '#888' }}>
             <h3>No messages found</h3>
-            <p>Try changing your filters or sync your account.</p>
+            <p>Try changing your filters. New emails sync automatically.</p>
           </div>
         ) : (
           filtered.map((mail) => (
