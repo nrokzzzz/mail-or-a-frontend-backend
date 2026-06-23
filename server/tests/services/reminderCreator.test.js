@@ -4,11 +4,17 @@
 
 // Mock the Reminder model before requiring the service
 jest.mock("../../modules/reminder/reminder.model", () => ({
-  create: jest.fn().mockResolvedValue({}),
+  create: jest.fn().mockResolvedValue({ _id: "rem-1", scheduledAt: new Date() }),
+}));
+
+// Mock the BullMQ queue so the unit test never touches Redis.
+jest.mock("../../services/reminderQueue.service", () => ({
+  scheduleReminder: jest.fn().mockResolvedValue(undefined),
 }));
 
 const { createReminders } = require("../../services/reminderCreator.service");
 const Reminder = require("../../modules/reminder/reminder.model");
+const { scheduleReminder } = require("../../services/reminderQueue.service");
 
 describe("reminderCreator service", () => {
   beforeEach(() => {
@@ -50,6 +56,30 @@ describe("reminderCreator service", () => {
     expect(calls).toContain("immediate");
     expect(calls).toContain("12hrs");
     expect(calls).toContain("1hr");
+  });
+
+  // ─── Delayed-job Scheduling ───────────────────────────────────
+  it("should schedule a BullMQ delayed job for each created reminder", async () => {
+    const deadline = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000); // 2 days from now
+
+    await createReminders({ ...baseParams, deadlineDate: deadline });
+
+    // Rule 1 creates 3 reminders → 3 scheduled jobs
+    expect(scheduleReminder).toHaveBeenCalledTimes(3);
+    expect(scheduleReminder).toHaveBeenCalledWith(
+      expect.objectContaining({ reminderId: "rem-1" })
+    );
+  });
+
+  it("should not schedule a job for a duplicate reminder (create rejects 11000)", async () => {
+    const duplicateError = new Error("Duplicate key");
+    duplicateError.code = 11000;
+    Reminder.create.mockRejectedValue(duplicateError);
+
+    const deadline = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000);
+    await createReminders({ ...baseParams, deadlineDate: deadline });
+
+    expect(scheduleReminder).not.toHaveBeenCalled();
   });
 
   // ─── Deadline >= 3 Days Away (Rule 2) ─────────────────────────

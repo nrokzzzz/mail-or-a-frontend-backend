@@ -1,47 +1,64 @@
 /**
  * Redis Configuration
  *
- * Provides a Redis client singleton for:
- * - Rate limiting store (express-rate-limit with Redis backing)
- * - Session caching
- * - Distributed locks
+ * Provides shared ioredis connections used by:
+ *   - BullMQ reminder queue + worker (delayed-job scheduling)
+ *   - (future) rate-limit store sharing across instances
  *
- * Currently uses in-memory rate limiting via express-rate-limit's default store.
- * When deploying multi-instance, enable Redis by setting REDIS_URL in env.
+ * BullMQ requires `maxRetriesPerRequest: null` on its connections, and a
+ * Worker must NOT share a connection with the Queue because it issues blocking
+ * commands (BRPOPLPUSH). We therefore expose:
+ *   - getRedisConnection()    → a lazily-created shared connection (Queue, general use)
+ *   - createRedisConnection() → a fresh connection (each Worker gets its own)
  *
- * TODO: When scaling to multi-instance production:
- *   1. Install: npm install rate-limit-redis ioredis
- *   2. Set REDIS_URL in .env (e.g., redis://localhost:6379)
- *   3. Uncomment the code below
- *   4. Update rateLimiter.middleware.js to use RedisStore
+ * Set REDIS_URL in .env (e.g. redis://localhost:6379). Defaults to localhost.
  */
 
-// const Redis = require("ioredis");
-// const logger = require("../utils/logger");
-//
-// let redisClient = null;
-//
-// function getRedisClient() {
-//   if (!redisClient) {
-//     const url = process.env.REDIS_URL || "redis://localhost:6379";
-//     redisClient = new Redis(url, {
-//       maxRetriesPerRequest: 3,
-//       retryStrategy: (times) => Math.min(times * 200, 5000),
-//     });
-//
-//     redisClient.on("connect", () => logger.info("Redis", "Connected"));
-//     redisClient.on("error", (err) => logger.error("Redis", "Connection error", err));
-//   }
-//   return redisClient;
-// }
-//
-// module.exports = { getRedisClient };
+const Redis = require("ioredis");
+const logger = require("../utils/logger");
 
-// Placeholder export — safe to import without Redis installed
+const REDIS_URL = process.env.REDIS_URL || "redis://localhost:6379";
+
+/**
+ * Build a new ioredis connection configured for BullMQ.
+ */
+function createRedisConnection(label = "Redis") {
+  const conn = new Redis(REDIS_URL, {
+    // BullMQ requirement — blocking commands must never give up.
+    maxRetriesPerRequest: null,
+    enableReadyCheck: false,
+    retryStrategy: (times) => Math.min(times * 200, 5000),
+  });
+
+  conn.on("connect", () => logger.info(label, "Connected"));
+  conn.on("error", (err) => logger.error(label, `Connection error: ${err.message}`));
+
+  return conn;
+}
+
+// ─── Shared connection (singleton) ──────────────────────────────────────────
+let _connection = null;
+
+function getRedisConnection() {
+  if (!_connection) {
+    _connection = createRedisConnection("Redis");
+  }
+  return _connection;
+}
+
+/**
+ * Close the shared connection (used during graceful shutdown).
+ */
+async function disconnectRedis() {
+  if (_connection) {
+    await _connection.quit();
+    _connection = null;
+    logger.info("Redis", "Shared connection closed");
+  }
+}
+
 module.exports = {
-  getRedisClient: () => {
-    throw new Error(
-      "Redis is not configured. Set REDIS_URL in .env and install ioredis to enable Redis features."
-    );
-  },
+  getRedisConnection,
+  createRedisConnection,
+  disconnectRedis,
 };

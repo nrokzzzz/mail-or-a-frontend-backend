@@ -17,6 +17,7 @@
  */
 
 const Reminder = require("../modules/reminder/reminder.model");
+const { scheduleReminder } = require("./reminderQueue.service");
 const logger = require("../utils/logger");
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -141,12 +142,29 @@ async function createReminders({
     }
   }
 
-  // Bulk insert, skip duplicates (same emailId + reminderType)
+  // Insert each reminder, then schedule it as a delayed BullMQ job that fires
+  // at its scheduledAt time. Skip duplicates (same emailId + reminderType).
   let created = 0;
   for (const doc of remindersToCreate) {
     try {
-      await Reminder.create(doc);
+      const reminder = await Reminder.create(doc);
       created++;
+
+      // Schedule the delayed job. A failure here must not abort reminder
+      // creation — the startup reconciler will re-enqueue any pending reminder
+      // that never got a job.
+      try {
+        await scheduleReminder({
+          reminderId: reminder._id,
+          scheduledAt: reminder.scheduledAt,
+        });
+      } catch (queueErr) {
+        logger.error(
+          "Reminder",
+          `Created reminder [${doc.reminderType}] but failed to enqueue job`,
+          queueErr
+        );
+      }
     } catch (err) {
       if (err.code === 11000) {
         // Duplicate — already scheduled, skip silently

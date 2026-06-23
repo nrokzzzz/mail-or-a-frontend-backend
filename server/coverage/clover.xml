@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1778566123358" clover="3.2.0">
-  <project timestamp="1778566123359" name="All files">
-    <metrics statements="1445" coveredstatements="482" conditionals="640" coveredconditionals="171" methods="156" coveredmethods="60" elements="2241" coveredelements="713" complexity="0" loc="1445" ncloc="1445" packages="12" files="53" classes="53"/>
+<coverage generated="1781603445593" clover="3.2.0">
+  <project timestamp="1781603445593" name="All files">
+    <metrics statements="1505" coveredstatements="547" conditionals="668" coveredconditionals="191" methods="166" coveredmethods="62" elements="2339" coveredelements="800" complexity="0" loc="1505" ncloc="1505" packages="12" files="54" classes="54"/>
     <package name="config">
-      <metrics statements="40" coveredstatements="0" conditionals="10" coveredconditionals="0" methods="8" coveredmethods="0"/>
-      <file name="db.js" path="E:\FaceRecognization\last-line\mail-or-a\server\config\db.js">
+      <metrics statements="55" coveredstatements="0" conditionals="17" coveredconditionals="0" methods="13" coveredmethods="0"/>
+      <file name="db.js" path="D:\GIT\mail-or-a-frontend-backend\server\config\db.js">
         <metrics statements="10" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="8" count="0" type="stmt"/>
         <line num="9" count="0" type="stmt"/>
@@ -17,7 +17,7 @@
         <line num="18" count="0" type="stmt"/>
         <line num="22" count="0" type="stmt"/>
       </file>
-      <file name="kafka.js" path="E:\FaceRecognization\last-line\mail-or-a\server\config\kafka.js">
+      <file name="kafka.js" path="D:\GIT\mail-or-a-frontend-backend\server\config\kafka.js">
         <metrics statements="28" coveredstatements="0" conditionals="10" coveredconditionals="0" methods="6" coveredmethods="0"/>
         <line num="8" count="0" type="stmt"/>
         <line num="9" count="0" type="stmt"/>
@@ -48,15 +48,30 @@
         <line num="85" count="0" type="stmt"/>
         <line num="89" count="0" type="stmt"/>
       </file>
-      <file name="redis.js" path="E:\FaceRecognization\last-line\mail-or-a\server\config\redis.js">
-        <metrics statements="2" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
-        <line num="41" count="0" type="stmt"/>
-        <line num="43" count="0" type="stmt"/>
+      <file name="redis.js" path="D:\GIT\mail-or-a-frontend-backend\server\config\redis.js">
+        <metrics statements="17" coveredstatements="0" conditionals="7" coveredconditionals="0" methods="6" coveredmethods="0"/>
+        <line num="17" count="0" type="stmt"/>
+        <line num="18" count="0" type="stmt"/>
+        <line num="20" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="26" count="0" type="stmt"/>
+        <line num="30" count="0" type="stmt"/>
+        <line num="33" count="0" type="stmt"/>
+        <line num="34" count="0" type="stmt"/>
+        <line num="36" count="0" type="stmt"/>
+        <line num="40" count="0" type="stmt"/>
+        <line num="43" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="44" count="0" type="stmt"/>
+        <line num="46" count="0" type="stmt"/>
+        <line num="53" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="56" count="0" type="stmt"/>
+        <line num="60" count="0" type="stmt"/>
       </file>
     </package>
     <package name="middlewares">
       <metrics statements="39" coveredstatements="16" conditionals="12" coveredconditionals="8" methods="5" coveredmethods="1"/>
-      <file name="auth.middleware.js" path="E:\FaceRecognization\last-line\mail-or-a\server\middlewares\auth.middleware.js">
+      <file name="auth.middleware.js" path="D:\GIT\mail-or-a-frontend-backend\server\middlewares\auth.middleware.js">
         <metrics statements="16" coveredstatements="16" conditionals="8" coveredconditionals="8" methods="1" coveredmethods="1"/>
         <line num="1" count="1" type="stmt"/>
         <line num="2" count="1" type="stmt"/>
@@ -75,7 +90,7 @@
         <line num="26" count="3" type="stmt"/>
         <line num="28" count="1" type="stmt"/>
       </file>
-      <file name="rateLimiter.middleware.js" path="E:\FaceRecognization\last-line\mail-or-a\server\middlewares\rateLimiter.middleware.js">
+      <file name="rateLimiter.middleware.js" path="D:\GIT\mail-or-a-frontend-backend\server\middlewares\rateLimiter.middleware.js">
         <metrics statements="6" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="12" count="0" type="stmt"/>
         <line num="18" count="0" type="stmt"/>
@@ -84,7 +99,7 @@
         <line num="64" count="0" type="stmt"/>
         <line num="72" count="0" type="stmt"/>
       </file>
-      <file name="upload.middleware.js" path="E:\FaceRecognization\last-line\mail-or-a\server\middlewares\upload.middleware.js">
+      <file name="upload.middleware.js" path="D:\GIT\mail-or-a-frontend-backend\server\middlewares\upload.middleware.js">
         <metrics statements="17" coveredstatements="0" conditionals="4" coveredconditionals="0" methods="4" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="3" count="0" type="stmt"/>
@@ -107,7 +122,7 @@
     </package>
     <package name="modules.auth">
       <metrics statements="284" coveredstatements="64" conditionals="111" coveredconditionals="25" methods="13" coveredmethods="5"/>
-      <file name="auth.controller.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\auth\auth.controller.js">
+      <file name="auth.controller.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\auth\auth.controller.js">
         <metrics statements="123" coveredstatements="64" conditionals="69" coveredconditionals="25" methods="7" coveredmethods="5"/>
         <line num="13" count="12" type="stmt"/>
         <line num="14" count="12" type="stmt"/>
@@ -233,7 +248,7 @@
         <line num="289" count="0" type="stmt"/>
         <line num="291" count="0" type="stmt"/>
       </file>
-      <file name="auth.routes.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\auth\auth.routes.js">
+      <file name="auth.routes.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\auth\auth.routes.js">
         <metrics statements="15" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
@@ -251,7 +266,7 @@
         <line num="28" count="0" type="stmt"/>
         <line num="30" count="0" type="stmt"/>
       </file>
-      <file name="google.controller.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\auth\google.controller.js">
+      <file name="google.controller.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\auth\google.controller.js">
         <metrics statements="48" coveredstatements="0" conditionals="16" coveredconditionals="0" methods="2" coveredmethods="0"/>
         <line num="3" count="0" type="stmt"/>
         <line num="4" count="0" type="stmt"/>
@@ -302,7 +317,7 @@
         <line num="137" count="0" type="stmt"/>
         <line num="138" count="0" type="stmt"/>
       </file>
-      <file name="google.routes.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\auth\google.routes.js">
+      <file name="google.routes.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\auth\google.routes.js">
         <metrics statements="7" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
@@ -312,14 +327,14 @@
         <line num="7" count="0" type="stmt"/>
         <line num="9" count="0" type="stmt"/>
       </file>
-      <file name="pendingVerification.model.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\auth\pendingVerification.model.js">
+      <file name="pendingVerification.model.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\auth\pendingVerification.model.js">
         <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="4" count="0" type="stmt"/>
         <line num="24" count="0" type="stmt"/>
         <line num="26" count="0" type="stmt"/>
       </file>
-      <file name="socialAuth.controller.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\auth\socialAuth.controller.js">
+      <file name="socialAuth.controller.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\auth\socialAuth.controller.js">
         <metrics statements="79" coveredstatements="0" conditionals="26" coveredconditionals="0" methods="4" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
@@ -401,7 +416,7 @@
         <line num="191" count="0" type="stmt"/>
         <line num="192" count="0" type="stmt"/>
       </file>
-      <file name="socialAuth.routes.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\auth\socialAuth.routes.js">
+      <file name="socialAuth.routes.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\auth\socialAuth.routes.js">
         <metrics statements="8" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
@@ -415,7 +430,7 @@
     </package>
     <package name="modules.connectedAccount">
       <metrics statements="111" coveredstatements="0" conditionals="52" coveredconditionals="0" methods="9" coveredmethods="0"/>
-      <file name="connectedAccount.controller.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\connectedAccount\connectedAccount.controller.js">
+      <file name="connectedAccount.controller.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\connectedAccount\connectedAccount.controller.js">
         <metrics statements="16" coveredstatements="0" conditionals="2" coveredconditionals="0" methods="2" coveredmethods="0"/>
         <line num="8" count="0" type="stmt"/>
         <line num="9" count="0" type="stmt"/>
@@ -434,7 +449,7 @@
         <line num="40" count="0" type="stmt"/>
         <line num="41" count="0" type="stmt"/>
       </file>
-      <file name="connectedAccount.model.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\connectedAccount\connectedAccount.model.js">
+      <file name="connectedAccount.model.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\connectedAccount\connectedAccount.model.js">
         <metrics statements="18" coveredstatements="0" conditionals="18" coveredconditionals="0" methods="2" coveredmethods="0"/>
         <line num="11" count="0" type="stmt"/>
         <line num="12" count="0" type="stmt"/>
@@ -455,7 +470,7 @@
         <line num="124" count="0" type="stmt"/>
         <line num="128" count="0" type="stmt"/>
       </file>
-      <file name="connectedAccount.routes.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\connectedAccount\connectedAccount.routes.js">
+      <file name="connectedAccount.routes.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\connectedAccount\connectedAccount.routes.js">
         <metrics statements="9" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
@@ -467,7 +482,7 @@
         <line num="9" count="0" type="stmt"/>
         <line num="11" count="0" type="stmt"/>
       </file>
-      <file name="sync.controller.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\connectedAccount\sync.controller.js">
+      <file name="sync.controller.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\connectedAccount\sync.controller.js">
         <metrics statements="68" coveredstatements="0" conditionals="32" coveredconditionals="0" methods="5" coveredmethods="0"/>
         <line num="7" count="0" type="stmt"/>
         <line num="8" count="0" type="stmt"/>
@@ -541,7 +556,7 @@
     </package>
     <package name="modules.email">
       <metrics statements="96" coveredstatements="65" conditionals="20" coveredconditionals="11" methods="17" coveredmethods="8"/>
-      <file name="confirmed.model.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\email\confirmed.model.js">
+      <file name="confirmed.model.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\email\confirmed.model.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
         <line num="4" count="1" type="stmt"/>
@@ -550,7 +565,7 @@
         <line num="62" count="1" type="stmt"/>
         <line num="64" count="1" type="stmt"/>
       </file>
-      <file name="email.controller.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\email\email.controller.js">
+      <file name="email.controller.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\email\email.controller.js">
         <metrics statements="61" coveredstatements="41" conditionals="20" coveredconditionals="11" methods="17" coveredmethods="8"/>
         <line num="9" count="1" type="stmt"/>
         <line num="10" count="1" type="stmt"/>
@@ -614,7 +629,7 @@
         <line num="204" count="1" type="stmt"/>
         <line num="205" count="1" type="stmt"/>
       </file>
-      <file name="email.routes.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\email\email.routes.js">
+      <file name="email.routes.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\email\email.routes.js">
         <metrics statements="11" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
@@ -628,7 +643,7 @@
         <line num="11" count="0" type="stmt"/>
         <line num="13" count="0" type="stmt"/>
       </file>
-      <file name="inprogress.model.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\email\inprogress.model.js">
+      <file name="inprogress.model.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\email\inprogress.model.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
         <line num="4" count="1" type="stmt"/>
@@ -637,7 +652,7 @@
         <line num="64" count="1" type="stmt"/>
         <line num="66" count="1" type="stmt"/>
       </file>
-      <file name="registered.model.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\email\registered.model.js">
+      <file name="registered.model.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\email\registered.model.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
         <line num="4" count="1" type="stmt"/>
@@ -646,7 +661,7 @@
         <line num="62" count="1" type="stmt"/>
         <line num="64" count="1" type="stmt"/>
       </file>
-      <file name="registration.model.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\email\registration.model.js">
+      <file name="registration.model.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\email\registration.model.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
         <line num="4" count="1" type="stmt"/>
@@ -658,7 +673,7 @@
     </package>
     <package name="modules.failedMessage">
       <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-      <file name="failedMessage.model.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\failedMessage\failedMessage.model.js">
+      <file name="failedMessage.model.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\failedMessage\failedMessage.model.js">
         <metrics statements="4" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="8" count="0" type="stmt"/>
         <line num="10" count="0" type="stmt"/>
@@ -668,7 +683,7 @@
     </package>
     <package name="modules.job">
       <metrics statements="30" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="3" coveredmethods="0"/>
-      <file name="job.proxy.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\job\job.proxy.js">
+      <file name="job.proxy.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\job\job.proxy.js">
         <metrics statements="30" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="3" coveredmethods="0"/>
         <line num="11" count="0" type="stmt"/>
         <line num="12" count="0" type="stmt"/>
@@ -704,7 +719,7 @@
     </package>
     <package name="modules.reminder">
       <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
-      <file name="reminder.model.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\reminder\reminder.model.js">
+      <file name="reminder.model.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\reminder\reminder.model.js">
         <metrics statements="5" coveredstatements="5" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="1" type="stmt"/>
         <line num="10" count="1" type="stmt"/>
@@ -715,7 +730,7 @@
     </package>
     <package name="modules.user">
       <metrics statements="238" coveredstatements="0" conditionals="211" coveredconditionals="0" methods="12" coveredmethods="0"/>
-      <file name="user.controller.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\user\user.controller.js">
+      <file name="user.controller.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\user\user.controller.js">
         <metrics statements="212" coveredstatements="0" conditionals="211" coveredconditionals="0" methods="11" coveredmethods="0"/>
         <line num="12" count="0" type="stmt"/>
         <line num="13" count="0" type="stmt"/>
@@ -930,7 +945,7 @@
         <line num="457" count="0" type="stmt"/>
         <line num="459" count="0" type="stmt"/>
       </file>
-      <file name="user.model.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\user\user.model.js">
+      <file name="user.model.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\user\user.model.js">
         <metrics statements="8" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="5" count="0" type="stmt"/>
@@ -941,7 +956,7 @@
         <line num="127" count="0" type="stmt"/>
         <line num="157" count="0" type="stmt"/>
       </file>
-      <file name="user.routes.js" path="E:\FaceRecognization\last-line\mail-or-a\server\modules\user\user.routes.js">
+      <file name="user.routes.js" path="D:\GIT\mail-or-a-frontend-backend\server\modules\user\user.routes.js">
         <metrics statements="18" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
@@ -964,8 +979,8 @@
       </file>
     </package>
     <package name="services">
-      <metrics statements="253" coveredstatements="76" conditionals="61" coveredconditionals="16" methods="29" coveredmethods="4"/>
-      <file name="emailAI.service.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\emailAI.service.js">
+      <metrics statements="298" coveredstatements="141" conditionals="82" coveredconditionals="36" methods="34" coveredmethods="6"/>
+      <file name="emailAI.service.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\emailAI.service.js">
         <metrics statements="14" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="0"/>
         <line num="8" count="0" type="stmt"/>
         <line num="9" count="0" type="stmt"/>
@@ -982,7 +997,7 @@
         <line num="70" count="0" type="stmt"/>
         <line num="75" count="0" type="stmt"/>
       </file>
-      <file name="gemini.service.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\gemini.service.js">
+      <file name="gemini.service.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\gemini.service.js">
         <metrics statements="13" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="11" count="0" type="stmt"/>
         <line num="12" count="0" type="stmt"/>
@@ -998,7 +1013,7 @@
         <line num="58" count="0" type="stmt"/>
         <line num="59" count="0" type="stmt"/>
       </file>
-      <file name="google.service.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\google.service.js">
+      <file name="google.service.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\google.service.js">
         <metrics statements="15" coveredstatements="0" conditionals="8" coveredconditionals="0" methods="3" coveredmethods="0"/>
         <line num="3" count="0" type="stmt"/>
         <line num="9" count="0" type="stmt"/>
@@ -1016,7 +1031,7 @@
         <line num="49" count="0" type="stmt"/>
         <line num="52" count="0" type="stmt"/>
       </file>
-      <file name="microsoft.service.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\microsoft.service.js">
+      <file name="microsoft.service.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\microsoft.service.js">
         <metrics statements="13" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="0"/>
         <line num="12" count="0" type="stmt"/>
         <line num="14" count="0" type="stmt"/>
@@ -1032,7 +1047,7 @@
         <line num="55" count="0" type="stmt"/>
         <line num="59" count="0" type="stmt"/>
       </file>
-      <file name="otp.email.service.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\otp.email.service.js">
+      <file name="otp.email.service.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\otp.email.service.js">
         <metrics statements="8" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="3" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="3" count="0" type="stmt"/>
@@ -1043,138 +1058,186 @@
         <line num="53" count="0" type="stmt"/>
         <line num="54" count="0" type="stmt"/>
       </file>
-      <file name="reminderCreator.service.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\reminderCreator.service.js">
-        <metrics statements="43" coveredstatements="42" conditionals="20" coveredconditionals="13" methods="1" coveredmethods="1"/>
+      <file name="reminderCreator.service.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\reminderCreator.service.js">
+        <metrics statements="47" coveredstatements="45" conditionals="20" coveredconditionals="13" methods="1" coveredmethods="1"/>
         <line num="19" count="9" type="stmt"/>
         <line num="20" count="9" type="stmt"/>
-        <line num="22" count="9" type="stmt"/>
+        <line num="21" count="9" type="stmt"/>
         <line num="23" count="9" type="stmt"/>
-        <line num="46" count="8" type="stmt"/>
-        <line num="47" count="8" type="stmt"/>
-        <line num="48" count="8" type="stmt"/>
-        <line num="51" count="8" type="cond" truecount="2" falsecount="0"/>
-        <line num="52" count="2" type="stmt"/>
+        <line num="24" count="9" type="stmt"/>
+        <line num="47" count="10" type="stmt"/>
+        <line num="48" count="10" type="stmt"/>
+        <line num="49" count="10" type="stmt"/>
+        <line num="52" count="10" type="cond" truecount="2" falsecount="0"/>
         <line num="53" count="2" type="stmt"/>
-        <line num="56" count="6" type="stmt"/>
-        <line num="57" count="6" type="stmt"/>
-        <line num="59" count="6" type="stmt"/>
-        <line num="69" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="75" count="4" type="stmt"/>
-        <line num="82" count="4" type="stmt"/>
-        <line num="83" count="4" type="cond" truecount="1" falsecount="1"/>
-        <line num="84" count="4" type="stmt"/>
-        <line num="92" count="4" type="stmt"/>
-        <line num="93" count="4" type="cond" truecount="1" falsecount="1"/>
-        <line num="94" count="4" type="stmt"/>
-        <line num="106" count="2" type="stmt"/>
+        <line num="54" count="2" type="stmt"/>
+        <line num="57" count="8" type="stmt"/>
+        <line num="58" count="8" type="stmt"/>
+        <line num="60" count="8" type="stmt"/>
+        <line num="70" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="76" count="6" type="stmt"/>
+        <line num="83" count="6" type="stmt"/>
+        <line num="84" count="6" type="cond" truecount="1" falsecount="1"/>
+        <line num="85" count="6" type="stmt"/>
+        <line num="93" count="6" type="stmt"/>
+        <line num="94" count="6" type="cond" truecount="1" falsecount="1"/>
+        <line num="95" count="6" type="stmt"/>
         <line num="107" count="2" type="stmt"/>
-        <line num="114" count="2" type="stmt"/>
-        <line num="115" count="2" type="cond" truecount="1" falsecount="1"/>
-        <line num="116" count="2" type="stmt"/>
-        <line num="124" count="2" type="stmt"/>
-        <line num="125" count="2" type="cond" truecount="1" falsecount="1"/>
-        <line num="126" count="2" type="stmt"/>
-        <line num="134" count="2" type="stmt"/>
-        <line num="135" count="2" type="cond" truecount="1" falsecount="1"/>
-        <line num="136" count="2" type="stmt"/>
-        <line num="145" count="6" type="stmt"/>
-        <line num="146" count="6" type="stmt"/>
-        <line num="147" count="20" type="stmt"/>
-        <line num="148" count="20" type="stmt"/>
-        <line num="149" count="14" type="stmt"/>
-        <line num="151" count="6" type="cond" truecount="1" falsecount="1"/>
-        <line num="153" count="6" type="stmt"/>
-        <line num="155" count="0" type="stmt"/>
-        <line num="159" count="6" type="cond" truecount="2" falsecount="0"/>
-        <line num="160" count="4" type="stmt"/>
-        <line num="164" count="9" type="stmt"/>
+        <line num="108" count="2" type="stmt"/>
+        <line num="115" count="2" type="stmt"/>
+        <line num="116" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="117" count="2" type="stmt"/>
+        <line num="125" count="2" type="stmt"/>
+        <line num="126" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="127" count="2" type="stmt"/>
+        <line num="135" count="2" type="stmt"/>
+        <line num="136" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="137" count="2" type="stmt"/>
+        <line num="147" count="8" type="stmt"/>
+        <line num="148" count="8" type="stmt"/>
+        <line num="149" count="26" type="stmt"/>
+        <line num="150" count="26" type="stmt"/>
+        <line num="151" count="13" type="stmt"/>
+        <line num="156" count="13" type="stmt"/>
+        <line num="157" count="13" type="stmt"/>
+        <line num="162" count="0" type="stmt"/>
+        <line num="169" count="13" type="cond" truecount="1" falsecount="1"/>
+        <line num="171" count="13" type="stmt"/>
+        <line num="173" count="0" type="stmt"/>
+        <line num="177" count="8" type="cond" truecount="2" falsecount="0"/>
+        <line num="178" count="4" type="stmt"/>
+        <line num="182" count="9" type="stmt"/>
       </file>
-      <file name="reminderScheduler.service.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\reminderScheduler.service.js">
-        <metrics statements="82" coveredstatements="0" conditionals="25" coveredconditionals="0" methods="6" coveredmethods="0"/>
-        <line num="14" count="0" type="stmt"/>
-        <line num="15" count="0" type="stmt"/>
-        <line num="16" count="0" type="stmt"/>
-        <line num="17" count="0" type="stmt"/>
-        <line num="18" count="0" type="stmt"/>
+      <file name="reminderQueue.service.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\reminderQueue.service.js">
+        <metrics statements="39" coveredstatements="0" conditionals="13" coveredconditionals="0" methods="5" coveredmethods="0"/>
+        <line num="21" count="0" type="stmt"/>
+        <line num="22" count="0" type="stmt"/>
+        <line num="23" count="0" type="stmt"/>
         <line num="24" count="0" type="stmt"/>
-        <line num="25" count="0" type="stmt"/>
         <line num="26" count="0" type="stmt"/>
-        <line num="27" count="0" type="stmt"/>
         <line num="28" count="0" type="stmt"/>
-        <line num="30" count="0" type="stmt"/>
-        <line num="31" count="0" type="stmt"/>
-        <line num="33" count="0" type="cond" truecount="0" falsecount="5"/>
-        <line num="35" count="0" type="stmt"/>
-        <line num="36" count="0" type="stmt"/>
+        <line num="36" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="37" count="0" type="stmt"/>
-        <line num="39" count="0" type="stmt"/>
-        <line num="40" count="0" type="stmt"/>
-        <line num="41" count="0" type="stmt"/>
-        <line num="43" count="0" type="stmt"/>
-        <line num="44" count="0" type="stmt"/>
-        <line num="45" count="0" type="stmt"/>
         <line num="47" count="0" type="stmt"/>
-        <line num="48" count="0" type="stmt"/>
         <line num="49" count="0" type="stmt"/>
-        <line num="51" count="0" type="stmt"/>
-        <line num="52" count="0" type="stmt"/>
-        <line num="53" count="0" type="stmt"/>
-        <line num="56" count="0" type="stmt"/>
-        <line num="57" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="58" count="0" type="stmt"/>
-        <line num="60" count="0" type="stmt"/>
-        <line num="63" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="70" count="0" type="stmt"/>
-        <line num="81" count="0" type="cond" truecount="0" falsecount="2"/>
-        <line num="82" count="0" type="stmt"/>
+        <line num="60" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="62" count="0" type="stmt"/>
+        <line num="63" count="0" type="stmt"/>
+        <line num="65" count="0" type="stmt"/>
+        <line num="74" count="0" type="stmt"/>
+        <line num="84" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="85" count="0" type="stmt"/>
-        <line num="91" count="0" type="stmt"/>
-        <line num="98" count="0" type="stmt"/>
-        <line num="101" count="0" type="stmt"/>
-        <line num="106" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="86" count="0" type="stmt"/>
+        <line num="87" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="88" count="0" type="stmt"/>
+        <line num="89" count="0" type="stmt"/>
+        <line num="92" count="0" type="stmt"/>
         <line num="108" count="0" type="stmt"/>
-        <line num="110" count="0" type="stmt"/>
-        <line num="111" count="0" type="stmt"/>
+        <line num="112" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="113" count="0" type="stmt"/>
-        <line num="117" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="114" count="0" type="stmt"/>
+        <line num="117" count="0" type="stmt"/>
         <line num="118" count="0" type="stmt"/>
         <line num="119" count="0" type="stmt"/>
         <line num="120" count="0" type="stmt"/>
         <line num="121" count="0" type="stmt"/>
-        <line num="125" count="0" type="cond" truecount="0" falsecount="4"/>
-        <line num="126" count="0" type="stmt"/>
+        <line num="123" count="0" type="stmt"/>
         <line num="127" count="0" type="stmt"/>
         <line num="128" count="0" type="stmt"/>
-        <line num="129" count="0" type="stmt"/>
-        <line num="133" count="0" type="cond" truecount="0" falsecount="4"/>
-        <line num="134" count="0" type="stmt"/>
-        <line num="135" count="0" type="stmt"/>
+        <line num="135" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="136" count="0" type="stmt"/>
         <line num="137" count="0" type="stmt"/>
-        <line num="141" count="0" type="stmt"/>
-        <line num="144" count="0" type="stmt"/>
-        <line num="147" count="0" type="stmt"/>
-        <line num="157" count="0" type="stmt"/>
-        <line num="158" count="0" type="stmt"/>
-        <line num="160" count="0" type="stmt"/>
-        <line num="163" count="0" type="stmt"/>
-        <line num="164" count="0" type="stmt"/>
-        <line num="165" count="0" type="stmt"/>
-        <line num="166" count="0" type="stmt"/>
-        <line num="170" count="0" type="stmt"/>
-        <line num="179" count="0" type="stmt"/>
-        <line num="182" count="0" type="stmt"/>
-        <line num="183" count="0" type="stmt"/>
+        <line num="138" count="0" type="stmt"/>
+        <line num="142" count="0" type="stmt"/>
+      </file>
+      <file name="reminderWorker.service.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\reminderWorker.service.js">
+        <metrics statements="84" coveredstatements="62" conditionals="33" coveredconditionals="20" methods="6" coveredmethods="2"/>
+        <line num="15" count="1" type="stmt"/>
+        <line num="16" count="1" type="stmt"/>
+        <line num="17" count="1" type="stmt"/>
+        <line num="18" count="1" type="stmt"/>
+        <line num="19" count="1" type="stmt"/>
+        <line num="20" count="1" type="stmt"/>
+        <line num="21" count="1" type="stmt"/>
+        <line num="27" count="2" type="stmt"/>
+        <line num="28" count="2" type="stmt"/>
+        <line num="29" count="2" type="stmt"/>
+        <line num="30" count="2" type="stmt"/>
+        <line num="31" count="2" type="stmt"/>
+        <line num="33" count="2" type="stmt"/>
+        <line num="34" count="2" type="stmt"/>
+        <line num="36" count="2" type="cond" truecount="2" falsecount="3"/>
+        <line num="38" count="0" type="stmt"/>
+        <line num="39" count="0" type="stmt"/>
+        <line num="40" count="0" type="stmt"/>
+        <line num="42" count="1" type="stmt"/>
+        <line num="43" count="1" type="stmt"/>
+        <line num="44" count="1" type="stmt"/>
+        <line num="46" count="1" type="stmt"/>
+        <line num="47" count="1" type="stmt"/>
+        <line num="48" count="1" type="stmt"/>
+        <line num="50" count="0" type="stmt"/>
+        <line num="51" count="0" type="stmt"/>
+        <line num="52" count="0" type="stmt"/>
+        <line num="54" count="0" type="stmt"/>
+        <line num="55" count="0" type="stmt"/>
+        <line num="56" count="0" type="stmt"/>
+        <line num="59" count="2" type="stmt"/>
+        <line num="60" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="61" count="0" type="stmt"/>
+        <line num="63" count="2" type="stmt"/>
+        <line num="66" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="73" count="2" type="stmt"/>
+        <line num="84" count="2" type="cond" truecount="1" falsecount="1"/>
+        <line num="85" count="2" type="stmt"/>
+        <line num="88" count="2" type="stmt"/>
+        <line num="94" count="2" type="stmt"/>
+        <line num="102" count="6" type="stmt"/>
+        <line num="104" count="6" type="stmt"/>
+        <line num="105" count="6" type="cond" truecount="2" falsecount="0"/>
+        <line num="106" count="1" type="stmt"/>
+        <line num="107" count="1" type="stmt"/>
+        <line num="112" count="5" type="cond" truecount="2" falsecount="0"/>
+        <line num="113" count="1" type="stmt"/>
+        <line num="114" count="1" type="stmt"/>
+        <line num="118" count="4" type="stmt"/>
+        <line num="122" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="123" count="1" type="stmt"/>
+        <line num="124" count="1" type="stmt"/>
+        <line num="125" count="1" type="stmt"/>
+        <line num="126" count="1" type="stmt"/>
+        <line num="129" count="3" type="cond" truecount="4" falsecount="0"/>
+        <line num="130" count="1" type="stmt"/>
+        <line num="131" count="1" type="stmt"/>
+        <line num="132" count="1" type="stmt"/>
+        <line num="133" count="1" type="stmt"/>
+        <line num="136" count="2" type="cond" truecount="4" falsecount="0"/>
+        <line num="137" count="1" type="stmt"/>
+        <line num="138" count="1" type="stmt"/>
+        <line num="139" count="1" type="stmt"/>
+        <line num="140" count="1" type="stmt"/>
+        <line num="144" count="1" type="stmt"/>
+        <line num="145" count="1" type="stmt"/>
+        <line num="148" count="1" type="stmt"/>
+        <line num="157" count="1" type="stmt"/>
+        <line num="158" count="1" type="stmt"/>
+        <line num="160" count="1" type="stmt"/>
+        <line num="163" count="1" type="stmt"/>
+        <line num="170" count="0" type="cond" truecount="0" falsecount="2"/>
+        <line num="172" count="0" type="stmt"/>
+        <line num="177" count="0" type="stmt"/>
+        <line num="178" count="0" type="stmt"/>
+        <line num="180" count="0" type="stmt"/>
+        <line num="181" count="0" type="stmt"/>
         <line num="184" count="0" type="stmt"/>
-        <line num="186" count="0" type="stmt"/>
-        <line num="191" count="0" type="stmt"/>
-        <line num="192" count="0" type="stmt"/>
+        <line num="185" count="0" type="stmt"/>
+        <line num="192" count="0" type="cond" truecount="0" falsecount="2"/>
         <line num="193" count="0" type="stmt"/>
         <line num="194" count="0" type="stmt"/>
-        <line num="196" count="0" type="stmt"/>
-        <line num="201" count="0" type="stmt"/>
+        <line num="195" count="0" type="stmt"/>
+        <line num="199" count="1" type="stmt"/>
       </file>
-      <file name="s3.service.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\s3.service.js">
+      <file name="s3.service.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\s3.service.js">
         <metrics statements="21" coveredstatements="0" conditionals="4" coveredconditionals="0" methods="3" coveredmethods="0"/>
         <line num="1" count="0" type="stmt"/>
         <line num="2" count="0" type="stmt"/>
@@ -1198,7 +1261,7 @@
         <line num="67" count="0" type="stmt"/>
         <line num="71" count="0" type="stmt"/>
       </file>
-      <file name="watchRenewal.service.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\watchRenewal.service.js">
+      <file name="watchRenewal.service.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\watchRenewal.service.js">
         <metrics statements="44" coveredstatements="34" conditionals="4" coveredconditionals="3" methods="6" coveredmethods="3"/>
         <line num="14" count="1" type="stmt"/>
         <line num="15" count="1" type="stmt"/>
@@ -1248,7 +1311,7 @@
     </package>
     <package name="services.kafka">
       <metrics statements="136" coveredstatements="67" conditionals="42" coveredconditionals="11" methods="14" coveredmethods="6"/>
-      <file name="dlq.handler.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\kafka\dlq.handler.js">
+      <file name="dlq.handler.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\kafka\dlq.handler.js">
         <metrics statements="12" coveredstatements="12" conditionals="6" coveredconditionals="6" methods="1" coveredmethods="1"/>
         <line num="9" count="1" type="stmt"/>
         <line num="10" count="1" type="stmt"/>
@@ -1263,7 +1326,7 @@
         <line num="58" count="2" type="stmt"/>
         <line num="62" count="1" type="stmt"/>
       </file>
-      <file name="emailClassification.consumer.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\kafka\emailClassification.consumer.js">
+      <file name="emailClassification.consumer.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\kafka\emailClassification.consumer.js">
         <metrics statements="68" coveredstatements="17" conditionals="26" coveredconditionals="0" methods="6" coveredmethods="0"/>
         <line num="12" count="5" type="stmt"/>
         <line num="13" count="5" type="stmt"/>
@@ -1334,7 +1397,7 @@
         <line num="212" count="0" type="stmt"/>
         <line num="215" count="5" type="stmt"/>
       </file>
-      <file name="emailClassification.producer.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\kafka\emailClassification.producer.js">
+      <file name="emailClassification.producer.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\kafka\emailClassification.producer.js">
         <metrics statements="6" coveredstatements="6" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="1"/>
         <line num="11" count="2" type="stmt"/>
         <line num="12" count="2" type="stmt"/>
@@ -1343,7 +1406,7 @@
         <line num="46" count="7" type="stmt"/>
         <line num="49" count="2" type="stmt"/>
       </file>
-      <file name="whatsappMessage.consumer.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\kafka\whatsappMessage.consumer.js">
+      <file name="whatsappMessage.consumer.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\kafka\whatsappMessage.consumer.js">
         <metrics statements="44" coveredstatements="32" conditionals="10" coveredconditionals="5" methods="5" coveredmethods="4"/>
         <line num="11" count="1" type="stmt"/>
         <line num="12" count="1" type="stmt"/>
@@ -1390,7 +1453,7 @@
         <line num="129" count="3" type="stmt"/>
         <line num="132" count="1" type="stmt"/>
       </file>
-      <file name="whatsappMessage.producer.js" path="E:\FaceRecognization\last-line\mail-or-a\server\services\kafka\whatsappMessage.producer.js">
+      <file name="whatsappMessage.producer.js" path="D:\GIT\mail-or-a-frontend-backend\server\services\kafka\whatsappMessage.producer.js">
         <metrics statements="6" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="1" coveredmethods="0"/>
         <line num="9" count="0" type="stmt"/>
         <line num="10" count="0" type="stmt"/>
@@ -1402,7 +1465,7 @@
     </package>
     <package name="utils">
       <metrics statements="209" coveredstatements="189" conditionals="113" coveredconditionals="100" methods="46" coveredmethods="36"/>
-      <file name="AppError.js" path="E:\FaceRecognization\last-line\mail-or-a\server\utils\AppError.js">
+      <file name="AppError.js" path="D:\GIT\mail-or-a-frontend-backend\server\utils\AppError.js">
         <metrics statements="6" coveredstatements="6" conditionals="2" coveredconditionals="2" methods="1" coveredmethods="1"/>
         <line num="23" count="9" type="stmt"/>
         <line num="25" count="9" type="stmt"/>
@@ -1411,7 +1474,7 @@
         <line num="30" count="9" type="stmt"/>
         <line num="34" count="1" type="stmt"/>
       </file>
-      <file name="apiResponse.js" path="E:\FaceRecognization\last-line\mail-or-a\server\utils\apiResponse.js">
+      <file name="apiResponse.js" path="D:\GIT\mail-or-a-frontend-backend\server\utils\apiResponse.js">
         <metrics statements="8" coveredstatements="8" conditionals="9" coveredconditionals="9" methods="3" coveredmethods="3"/>
         <line num="22" count="9" type="stmt"/>
         <line num="23" count="9" type="cond" truecount="2" falsecount="0"/>
@@ -1422,13 +1485,13 @@
         <line num="56" count="13" type="stmt"/>
         <line num="59" count="14" type="stmt"/>
       </file>
-      <file name="asyncHandler.js" path="E:\FaceRecognization\last-line\mail-or-a\server\utils\asyncHandler.js">
+      <file name="asyncHandler.js" path="D:\GIT\mail-or-a-frontend-backend\server\utils\asyncHandler.js">
         <metrics statements="3" coveredstatements="3" conditionals="0" coveredconditionals="0" methods="2" coveredmethods="2"/>
         <line num="12" count="82" type="stmt"/>
         <line num="13" count="23" type="stmt"/>
         <line num="16" count="14" type="stmt"/>
       </file>
-      <file name="auth.js" path="E:\FaceRecognization\last-line\mail-or-a\server\utils\auth.js">
+      <file name="auth.js" path="D:\GIT\mail-or-a-frontend-backend\server\utils\auth.js">
         <metrics statements="6" coveredstatements="6" conditionals="2" coveredconditionals="1" methods="2" coveredmethods="2"/>
         <line num="8" count="13" type="stmt"/>
         <line num="15" count="13" type="stmt"/>
@@ -1437,7 +1500,7 @@
         <line num="25" count="3" type="stmt"/>
         <line num="33" count="13" type="stmt"/>
       </file>
-      <file name="circuitBreaker.js" path="E:\FaceRecognization\last-line\mail-or-a\server\utils\circuitBreaker.js">
+      <file name="circuitBreaker.js" path="D:\GIT\mail-or-a-frontend-backend\server\utils\circuitBreaker.js">
         <metrics statements="37" coveredstatements="37" conditionals="17" coveredconditionals="14" methods="5" coveredmethods="5"/>
         <line num="15" count="1" type="stmt"/>
         <line num="17" count="1" type="stmt"/>
@@ -1477,7 +1540,7 @@
         <line num="109" count="5" type="stmt"/>
         <line num="118" count="1" type="stmt"/>
       </file>
-      <file name="crypto.js" path="E:\FaceRecognization\last-line\mail-or-a\server\utils\crypto.js">
+      <file name="crypto.js" path="D:\GIT\mail-or-a-frontend-backend\server\utils\crypto.js">
         <metrics statements="52" coveredstatements="43" conditionals="14" coveredconditionals="12" methods="3" coveredmethods="3"/>
         <line num="16" count="13" type="stmt"/>
         <line num="17" count="13" type="stmt"/>
@@ -1532,7 +1595,7 @@
         <line num="117" count="13" type="stmt"/>
         <line num="118" count="1" type="stmt"/>
       </file>
-      <file name="emailParser.js" path="E:\FaceRecognization\last-line\mail-or-a\server\utils\emailParser.js">
+      <file name="emailParser.js" path="D:\GIT\mail-or-a-frontend-backend\server\utils\emailParser.js">
         <metrics statements="22" coveredstatements="21" conditionals="21" coveredconditionals="20" methods="5" coveredmethods="5"/>
         <line num="18" count="8" type="cond" truecount="2" falsecount="0"/>
         <line num="21" count="7" type="cond" truecount="2" falsecount="0"/>
@@ -1557,7 +1620,7 @@
         <line num="60" count="0" type="stmt"/>
         <line num="63" count="1" type="stmt"/>
       </file>
-      <file name="joiSchemas.js" path="E:\FaceRecognization\last-line\mail-or-a\server\utils\joiSchemas.js">
+      <file name="joiSchemas.js" path="D:\GIT\mail-or-a-frontend-backend\server\utils\joiSchemas.js">
         <metrics statements="14" coveredstatements="14" conditionals="2" coveredconditionals="2" methods="2" coveredmethods="2"/>
         <line num="15" count="1" type="stmt"/>
         <line num="19" count="1" type="stmt"/>
@@ -1574,29 +1637,29 @@
         <line num="158" count="3" type="stmt"/>
         <line num="162" count="1" type="stmt"/>
       </file>
-      <file name="logger.js" path="E:\FaceRecognization\last-line\mail-or-a\server\utils\logger.js">
+      <file name="logger.js" path="D:\GIT\mail-or-a-frontend-backend\server\utils\logger.js">
         <metrics statements="19" coveredstatements="19" conditionals="20" coveredconditionals="14" methods="5" coveredmethods="5"/>
-        <line num="20" count="3" type="stmt"/>
-        <line num="29" count="3" type="cond" truecount="2" falsecount="0"/>
-        <line num="41" count="9" type="stmt"/>
-        <line num="42" count="9" type="stmt"/>
-        <line num="43" count="9" type="cond" truecount="2" falsecount="0"/>
+        <line num="20" count="4" type="stmt"/>
+        <line num="29" count="4" type="cond" truecount="2" falsecount="0"/>
+        <line num="41" count="12" type="stmt"/>
+        <line num="42" count="12" type="stmt"/>
+        <line num="43" count="12" type="cond" truecount="2" falsecount="0"/>
         <line num="44" count="2" type="cond" truecount="1" falsecount="1"/>
-        <line num="46" count="7" type="cond" truecount="2" falsecount="0"/>
+        <line num="46" count="10" type="cond" truecount="2" falsecount="0"/>
         <line num="47" count="2" type="cond" truecount="2" falsecount="0"/>
-        <line num="49" count="5" type="stmt"/>
-        <line num="52" count="3" type="stmt"/>
-        <line num="60" count="3" type="cond" truecount="1" falsecount="1"/>
-        <line num="61" count="3" type="stmt"/>
-        <line num="72" count="2" type="cond" truecount="1" falsecount="1"/>
-        <line num="73" count="2" type="stmt"/>
+        <line num="49" count="8" type="stmt"/>
+        <line num="52" count="4" type="stmt"/>
+        <line num="60" count="4" type="cond" truecount="1" falsecount="1"/>
+        <line num="61" count="4" type="stmt"/>
+        <line num="72" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="73" count="3" type="stmt"/>
         <line num="84" count="2" type="cond" truecount="1" falsecount="1"/>
         <line num="85" count="2" type="stmt"/>
-        <line num="96" count="2" type="cond" truecount="1" falsecount="1"/>
-        <line num="97" count="2" type="stmt"/>
-        <line num="102" count="3" type="stmt"/>
+        <line num="96" count="3" type="cond" truecount="1" falsecount="1"/>
+        <line num="97" count="3" type="stmt"/>
+        <line num="102" count="4" type="stmt"/>
       </file>
-      <file name="validators.js" path="E:\FaceRecognization\last-line\mail-or-a\server\utils\validators.js">
+      <file name="validators.js" path="D:\GIT\mail-or-a-frontend-backend\server\utils\validators.js">
         <metrics statements="42" coveredstatements="32" conditionals="26" coveredconditionals="26" methods="18" coveredmethods="8"/>
         <line num="18" count="1" type="stmt"/>
         <line num="19" count="1" type="stmt"/>

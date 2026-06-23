@@ -10,11 +10,13 @@ require("dotenv").config();
 const app = require("./app");
 const connectDB = require("./config/db");
 const logger = require("./utils/logger");
-const { startReminderScheduler } = require("./services/reminderScheduler.service");
+const { startReminderWorker, stopReminderWorker } = require("./services/reminderWorker.service");
+const { reconcilePendingReminders, closeReminderQueue } = require("./services/reminderQueue.service");
 const { startWatchRenewalScheduler } = require("./services/watchRenewal.service");
 const { ensureTopics, TOPICS, disconnectKafka } = require("./config/kafka");
 const { startEmailClassificationConsumer } = require("./services/kafka/emailClassification.consumer");
 const { startWhatsAppMessageConsumer } = require("./services/kafka/whatsappMessage.consumer");
+const { disconnectRedis } = require("./config/redis");
 const mongoose = require("mongoose");
 
 // ─── Global Error Safety Net ────────────────────────────────────────────────
@@ -60,8 +62,20 @@ const PORT = process.env.PORT || 5000;
     logger.error("Kafka", "Kafka setup failed — server running WITHOUT Kafka", kafkaErr);
   }
 
-  // Start the WhatsApp reminder cron (checks every 5 minutes)
-  startReminderScheduler();
+  // Start the BullMQ reminder worker (processes delayed jobs — no polling).
+  startReminderWorker();
+
+  // Durability backstop: re-enqueue any still-pending reminders that lack a
+  // live job (legacy reminders, jobs added while down, or a flushed Redis).
+  // One bounded scan at boot — not a recurring poll. Delay lets DB/Redis connect.
+  setTimeout(async () => {
+    try {
+      logger.info("ReminderQueue", "Reconciling pending reminders on startup...");
+      await reconcilePendingReminders();
+    } catch (err) {
+      logger.error("ReminderQueue", "Startup reconcile error", err);
+    }
+  }, 10000);
 
   // Start Gmail watch renewal cron (checks every 6 hours — v2.1 enhancement)
   startWatchRenewalScheduler();
@@ -77,8 +91,10 @@ const PORT = process.env.PORT || 5000;
    *   1. Stop accepting new HTTP connections
    *   2. Disconnect Kafka consumers (stop processing messages)
    *   3. Disconnect Kafka producer
-   *   4. Close MongoDB connection
-   *   5. Exit process
+   *   4. Stop the reminder worker + queue (BullMQ)
+   *   5. Disconnect Redis
+   *   6. Close MongoDB connection
+   *   7. Exit process
    */
   async function gracefulShutdown(signal) {
     logger.info("Server", `${signal} received — starting graceful shutdown...`);
@@ -103,7 +119,14 @@ const PORT = process.env.PORT || 5000;
       await disconnectKafka();
       logger.info("Kafka", "Producer disconnected");
 
-      // 4. Close MongoDB
+      // 4. Stop the reminder worker + queue (finishes in-flight jobs)
+      await stopReminderWorker();
+      await closeReminderQueue();
+
+      // 5. Disconnect Redis
+      await disconnectRedis();
+
+      // 6. Close MongoDB
       await mongoose.connection.close();
       logger.info("MongoDB", "Connection closed");
 

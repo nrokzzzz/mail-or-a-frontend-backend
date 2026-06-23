@@ -3,15 +3,15 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for modules/email/email.controller.js</title>
+    <title>Code coverage report for services/reminderWorker.service.js</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="../../prettify.css" />
-    <link rel="stylesheet" href="../../base.css" />
-    <link rel="shortcut icon" type="image/x-icon" href="../../favicon.png" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <link rel="shortcut icon" type="image/x-icon" href="../favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <style type='text/css'>
         .coverage-summary .sorter {
-            background-image: url(../../sort-arrow-sprite.png);
+            background-image: url(../sort-arrow-sprite.png);
         }
     </style>
 </head>
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../../index.html">All files</a> / <a href="index.html">modules/email</a> email.controller.js</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">services</a> reminderWorker.service.js</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">63.63% </span>
+                <span class="strong">72.94% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>42/66</span>
+                <span class='fraction'>62/85</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">55% </span>
+                <span class="strong">60.6% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>11/20</span>
+                <span class='fraction'>20/33</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">47.05% </span>
+                <span class="strong">33.33% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>8/17</span>
+                <span class='fraction'>2/6</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">67.21% </span>
+                <span class="strong">73.8% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>41/61</span>
+                <span class='fraction'>62/84</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -267,9 +267,13 @@
 <a name='L202'></a><a href='#L202'>202</a>
 <a name='L203'></a><a href='#L203'>203</a>
 <a name='L204'></a><a href='#L204'>204</a>
-<a name='L205'></a><a href='#L205'>205</a>
-<a name='L206'></a><a href='#L206'>206</a>
-<a name='L207'></a><a href='#L207'>207</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L205'></a><a href='#L205'>205</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -284,22 +288,51 @@
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -314,48 +347,18 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">4x</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">5x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -365,322 +368,313 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-yes">6x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">5x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">3x</span>
-<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">2x</span>
-<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">/**
- * Email Controller
+ * Reminder Worker Service (BullMQ)
  *
- * Handles CRUD operations for classified emails across all 4 stage collections.
- * Uses a factory pattern to eliminate repetitive stage-specific handlers.
- * Supports pagination via ?page=N&amp;limit=N query params (defaults: page=1, limit=20).
+ * Consumes delayed jobs from the "reminders" queue. Each job fires at exactly
+ * its reminder's scheduledAt time (no polling). For each job it:
+ *   1. Loads the Reminder (source of truth) + the user.
+ *   2. Validates the user still wants/can receive a WhatsApp reminder.
+ *   3. Formats the message and publishes it to the Kafka `whatsapp-messages`
+ *      topic — the existing consumer handles delivery with retry + DLQ.
+ *   4. Marks the Reminder "queued".
+ *
+ * Replaces the old node-cron scheduler in reminderScheduler.service.js.
  */
 &nbsp;
-const RegistrationEmail = require("./registration.model");
-const RegisteredEmail   = require("./registered.model");
-const InProgressEmail   = require("./inprogress.model");
-const ConfirmedEmail    = require("./confirmed.model");
-const Reminder          = require("../reminder/reminder.model");
-const { decrypt }       = require("../../utils/crypto");
-const asyncHandler      = require("../../utils/asyncHandler");
-const { sendSuccess, sendPaginated, sendError } = require("../../utils/apiResponse");
-const logger            = require("../../utils/logger");
-&nbsp;
-// ─── Model Registry ─────────────────────────────────────────────────────────
-const MODELS = [
-  { model: RegistrationEmail, type: "registration" },
-  { model: RegisteredEmail,   type: "registered"   },
-  { model: InProgressEmail,   type: "inprogress"   },
-  { model: ConfirmedEmail,    type: "confirmed"     },
-];
-&nbsp;
-const MODEL_MAP = Object.fromEntries(MODELS.map((m) =&gt; [m.type, m]));
-&nbsp;
-// ─── Helpers ────────────────────────────────────────────────────────────────
+const { Worker } = require("bullmq");
+const { createRedisConnection } = require("../config/redis");
+const { QUEUE_NAME } = require("./reminderQueue.service");
+const Reminder = require("../modules/reminder/reminder.model");
+const User = require("../modules/user/user.model");
+const { produceWhatsAppMessage } = require("./kafka/whatsappMessage.producer");
+const logger = require("../utils/logger");
 &nbsp;
 /**
- * Decrypt all encrypted fields on an email document.
- * @param {object} email - Mongoose document
- * @param {string} type  - Email stage type
- * @returns {object} Decrypted plain object
+ * Format a WhatsApp reminder message.
  */
-function decryptEmail(email, type) {
-  return {
-    ...email._doc,
-    type,
-    subject: decrypt(email.subject),
-    from:    decrypt(email.from),
-    snippet: decrypt(email.snippet),
-    body:    decrypt(email.body),
-    matter:  email.matter ? decrypt(email.matter) : <span class="branch-1 cbranch-no" title="branch not covered" >"",</span>
-    links:   Array.isArray(email.links) ? email.links.map(l =&gt; decrypt(l)) : <span class="branch-1 cbranch-no" title="branch not covered" >[],</span>
-  };
+function formatReminderMessage(reminder) {
+  const deadline = new Date(reminder.deadlineDate);
+  const now = new Date();
+  const hoursLeft = Math.max(0, Math.round((deadline - now) / (60 * 60 * 1000)));
+  const daysLeft = Math.floor(hoursLeft / 24);
+  const remainingHours = hoursLeft % 24;
+&nbsp;
+  let urgencyEmoji = "📋";
+  let urgencyLabel = "";
+&nbsp;
+  switch (reminder.reminderType) {
+<span class="branch-0 cbranch-no" title="branch not covered" >    case "immediate":</span>
+<span class="cstat-no" title="statement not covered" >      urgencyEmoji = "🚨";</span>
+<span class="cstat-no" title="statement not covered" >      urgencyLabel = "URGENT — Deadline approaching fast!";</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+    case "1hr":
+      urgencyEmoji = "⏰";
+      urgencyLabel = "FINAL REMINDER — Only ~1 hour left!";
+      break;
+    case "12hrs":
+      urgencyEmoji = "⚠️";
+      urgencyLabel = "Reminder — ~12 hours remaining";
+      break;
+<span class="branch-3 cbranch-no" title="branch not covered" >    case "24hrs":</span>
+<span class="cstat-no" title="statement not covered" >      urgencyEmoji = "📌";</span>
+<span class="cstat-no" title="statement not covered" >      urgencyLabel = "Follow-up — ~2 days remaining";</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+<span class="branch-4 cbranch-no" title="branch not covered" >    case "3days":</span>
+<span class="cstat-no" title="statement not covered" >      urgencyEmoji = "🔔";</span>
+<span class="cstat-no" title="statement not covered" >      urgencyLabel = "Heads-up — 3 days until deadline";</span>
+<span class="cstat-no" title="statement not covered" >      break;</span>
+  }
+&nbsp;
+  let timeLeftStr = "";
+  <span class="missing-if-branch" title="if path not taken" >I</span>if (daysLeft &gt; 0) {
+<span class="cstat-no" title="statement not covered" >    timeLeftStr = `${daysLeft}d ${remainingHours}h`;</span>
+  } else {
+    timeLeftStr = `${remainingHours}h`;
+  }
+&nbsp;
+  const categoryIcon = {
+    job: "💼",
+    internship: "🎓",
+    hackathon: "🏆",
+    workshop: "🛠️",
+  }[reminder.emailCategory] || <span class="branch-1 cbranch-no" title="branch not covered" >"📧";</span>
+&nbsp;
+  const lines = [
+    `${urgencyEmoji} *Mail-or-a Deadline Reminder*`,
+    ``,
+    `${urgencyLabel}`,
+    ``,
+    `${categoryIcon} *Category:* ${(reminder.emailCategory || <span class="branch-1 cbranch-no" title="branch not covered" >"")</span>.toUpperCase()}`,
+    `📄 *Subject:* ${reminder.emailSubject}`,
+    `⏳ *Deadline:* ${deadline.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`,
+    `⏱️ *Time Left:* ${timeLeftStr}`,
+  ];
+&nbsp;
+  <span class="missing-if-branch" title="else path not taken" >E</span>if (reminder.emailMatter) {
+    lines.push(``, `💡 *Summary:* ${reminder.emailMatter}`);
+  }
+&nbsp;
+  lines.push(
+    ``,
+    `—`,
+    `_Open Mail-or-a to take action before it's too late!_`
+  );
+&nbsp;
+  return lines.join("\n");
 }
 &nbsp;
 /**
- * Parse pagination params from query string with sensible defaults.
- * @param {object} query - req.query
- * @returns {{ page: number, limit: number, skip: number }}
+ * Process a single reminder job. Mirrors the per-reminder logic that used to
+ * live in the cron's processDueReminders() loop.
  */
-function parsePagination(query) {
-  const page  = Math.max(1, parseInt(query.page, 10) || 1);
-  const limit = Math.min(100, Math.max(1, parseInt(query.limit, 10) || 20));
-  const skip  = (page - 1) * limit;
-  return { page, limit, skip };
-}
+async function processReminderJob(job) {
+  const { reminderId } = job.data;
 &nbsp;
-// ─── Factory: Stage-Specific Email Handler ──────────────────────────────────
+  const reminder = await Reminder.findById(reminderId);
+  if (!reminder) {
+    logger.warn("ReminderWorker", `Reminder ${reminderId} not found — skipping`);
+    return;
+  }
 &nbsp;
-/**
- * Factory function that creates a handler for fetching emails by stage.
- * Eliminates the need for 4 nearly-identical exported functions.
- *
- * @param {string} type - One of "registration", "registered", "inprogress", "confirmed"
- * @returns {Function} Express route handler
- */
-function getEmailsByStage(type) {
-  const entry = MODEL_MAP[type];
-  <span class="missing-if-branch" title="if path not taken" >I</span>if (!entry) <span class="cstat-no" title="statement not covered" >throw new Error(`Invalid email stage type: ${type}`);</span>
+  // Idempotency guard: only act on reminders that are still pending. If a
+  // duplicate job somehow runs, the second one finds status !== "pending".
+  if (reminder.status !== "pending") {
+    logger.debug("ReminderWorker", `Reminder ${reminderId} already "${reminder.status}" — skipping`);
+    return;
+  }
 &nbsp;
-  return asyncHandler(async (req, res) =&gt; {
-    const { page, limit, skip } = parsePagination(req.query);
+  // Look up the user's verified mobile number + preferences.
+  const user = await User.findById(reminder.userId).select(
+    "name countryCode mobileNumber isMobileVerified reminderPreferences"
+  );
 &nbsp;
-    const [emails, total] = await Promise.all([
-      entry.model
-        .find({ userId: req.user._id })
-        .sort({ receivedAt: -1 })
-        .skip(skip)
-        .limit(limit),
-      entry.model.countDocuments({ userId: req.user._id }),
-    ]);
+  if (!user) {
+    reminder.status = "skipped";
+    reminder.failReason = "User not found";
+    await reminder.save();
+    return;
+  }
 &nbsp;
-    sendPaginated(
-      res,
-      emails.map((e) =&gt; decryptEmail(e, type)),
-      { page, limit, total, totalPages: Math.ceil(total / limit) },
-      `${type} emails fetched`
-    );
+  if (user.reminderPreferences &amp;&amp; user.reminderPreferences.whatsapp === false) {
+    reminder.status = "skipped";
+    reminder.failReason = "User disabled WhatsApp reminders";
+    await reminder.save();
+    return;
+  }
+&nbsp;
+  if (!user.isMobileVerified || !user.mobileNumber) {
+    reminder.status = "skipped";
+    reminder.failReason = "Mobile not verified";
+    await reminder.save();
+    return;
+  }
+&nbsp;
+  // Build WhatsApp number (strip "+" from country code) and the message.
+  const whatsappNumber = `${user.countryCode.replace("+", "")}${user.mobileNumber}`;
+  const message = formatReminderMessage(reminder);
+&nbsp;
+  // Publish to Kafka — the existing consumer handles delivery + retry + DLQ.
+  await produceWhatsAppMessage({
+    reminderId: reminder._id.toString(),
+    userId: reminder.userId.toString(),
+    whatsappNumber,
+    message,
+    reminderType: reminder.reminderType,
+    userName: user.name,
   });
+&nbsp;
+  reminder.status = "queued";
+  await reminder.save();
+&nbsp;
+  logger.info("ReminderWorker", `Queued [${reminder.reminderType}] for ${user.name} (${whatsappNumber})`);
 }
 &nbsp;
-// ─── Exported Handlers ──────────────────────────────────────────────────────
+let _worker = null;
 &nbsp;
 /**
- * GET /api/emails — all emails for the user across all categories.
- *
- * Uses MongoDB $unionWith aggregation to do cross-collection pagination
- * entirely at the database level, avoiding in-memory sort/slice.
- * Falls back to parallel query approach if aggregation is unavailable.
+ * Start the BullMQ reminder worker. Safe to call once per process.
+ * Concurrency is configurable via REMINDER_WORKER_CONCURRENCY (default 10).
  */
-exports.getAllEmails = asyncHandler(<span class="fstat-no" title="function not covered" >as</span>ync (req, res) =&gt; {
-  const { page, limit, skip } = <span class="cstat-no" title="statement not covered" >parsePagination(req.query);</span>
-  const userId = <span class="cstat-no" title="statement not covered" >req.user._id;</span>
+function <span class="fstat-no" title="function not covered" >startReminderWorker(</span>) {
+<span class="cstat-no" title="statement not covered" >  if (_worker) <span class="cstat-no" title="statement not covered" >return _worker;</span></span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >  try {</span>
-    // ─── Database-level cross-collection pagination via $unionWith ──
-    // This avoids fetching ALL documents into memory just to paginate.
-    const pipeline = <span class="cstat-no" title="statement not covered" >[</span>
-      { $match: { userId } },
-      { $addFields: { _type: "registration" } },
-      { $unionWith: { coll: "registeredemails", pipeline: [{ $match: { userId } }, { $addFields: { _type: "registered" } }] } },
-      { $unionWith: { coll: "inprogressemails", pipeline: [{ $match: { userId } }, { $addFields: { _type: "inprogress" } }] } },
-      { $unionWith: { coll: "confirmedemails",  pipeline: [{ $match: { userId } }, { $addFields: { _type: "confirmed" } }] } },
-      { $sort: { receivedAt: -1 } },
-      {
-        $facet: {
-          data: [{ $skip: skip }, { $limit: limit }],
-          totalCount: [{ $count: "count" }],
-        },
-      },
-    ];
+<span class="cstat-no" title="statement not covered" >  _worker = new Worker(QUEUE_NAME, processReminderJob, {</span>
+    connection: createRedisConnection("ReminderWorker"), // worker needs its own connection
+    concurrency: parseInt(process.env.REMINDER_WORKER_CONCURRENCY || "10", 10),
+  });
 &nbsp;
-    const [result] = <span class="cstat-no" title="statement not covered" >await RegistrationEmail.aggregate(pipeline);</span>
+<span class="cstat-no" title="statement not covered" >  _worker.on("failed", <span class="fstat-no" title="function not covered" >(j</span>ob, err) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    logger.error("ReminderWorker", `Job ${job?.id} failed (attempt ${job?.attemptsMade}): ${err.message}`);</span>
+  });
+<span class="cstat-no" title="statement not covered" >  _worker.on("error", <span class="fstat-no" title="function not covered" >(e</span>rr) =&gt; {</span>
+<span class="cstat-no" title="statement not covered" >    logger.error("ReminderWorker", `Worker error: ${err.message}`);</span>
+  });
 &nbsp;
-    const total = <span class="cstat-no" title="statement not covered" >result.totalCount[0]?.count || 0;</span>
-    const emails = <span class="cstat-no" title="statement not covered" >result.data.map(<span class="fstat-no" title="function not covered" >(d</span>oc) =&gt; (<span class="cstat-no" title="statement not covered" >{</span></span>
-      ...doc,
-      type: doc._type,
-      subject: decrypt(doc.subject),
-      from:    decrypt(doc.from),
-      snippet: decrypt(doc.snippet),
-      body:    decrypt(doc.body),
-      matter:  doc.matter ? decrypt(doc.matter) : "",
-      links:   Array.isArray(doc.links) ? doc.links.map(<span class="fstat-no" title="function not covered" >l </span>=&gt; <span class="cstat-no" title="statement not covered" >decrypt(l))</span> : [],
-    }));
+<span class="cstat-no" title="statement not covered" >  logger.info("ReminderWorker", "Reminder worker started — BullMQ delayed jobs (no polling)");</span>
+<span class="cstat-no" title="statement not covered" >  return _worker;</span>
+}
 &nbsp;
-<span class="cstat-no" title="statement not covered" >    sendPaginated(res, emails, {</span>
-      page, limit, total, totalPages: Math.ceil(total / limit),
-    }, "All emails fetched");
-&nbsp;
-  } catch (aggregationErr) {
-    // Fallback: parallel queries (for older MongoDB versions without $unionWith)
-<span class="cstat-no" title="statement not covered" >    logger.warn("Email", "Aggregation fallback for getAllEmails", aggregationErr.message);</span>
-&nbsp;
-    const counts = <span class="cstat-no" title="statement not covered" >await Promise.all(</span>
-      MODELS.map(<span class="fstat-no" title="function not covered" >({</span> model }) =&gt; <span class="cstat-no" title="statement not covered" >model.countDocuments({ userId }))</span>
-    );
-    const total = <span class="cstat-no" title="statement not covered" >counts.reduce(<span class="fstat-no" title="function not covered" >(s</span>um, c) =&gt; <span class="cstat-no" title="statement not covered" >sum + c,</span> 0);</span>
-&nbsp;
-    // Distribute limit proportionally across collections
-    const results = <span class="cstat-no" title="statement not covered" >await Promise.all(</span>
-      MODELS.map(<span class="fstat-no" title="function not covered" >({</span> model, type }) =&gt;
-<span class="cstat-no" title="statement not covered" >        model</span>
-          .find({ userId })
-          .sort({ receivedAt: -1 })
-          .limit(limit) // Fetch at most `limit` from each to bound memory
-          .then(<span class="fstat-no" title="function not covered" >(d</span>ocs) =&gt; <span class="cstat-no" title="statement not covered" >docs.map(<span class="fstat-no" title="function not covered" >(d</span>oc) =&gt; <span class="cstat-no" title="statement not covered" >decryptEmail(doc, type))</span>)</span>
-      )
-    );
-&nbsp;
-    const all = <span class="cstat-no" title="statement not covered" >results</span>
-      .flat()
-      .sort(<span class="fstat-no" title="function not covered" >(a</span>, b) =&gt; <span class="cstat-no" title="statement not covered" >new Date(b.receivedAt) - new Date(a.receivedAt))</span>;
-&nbsp;
-    const paginated = <span class="cstat-no" title="statement not covered" >all.slice(skip, skip + limit);</span>
-&nbsp;
-<span class="cstat-no" title="statement not covered" >    sendPaginated(res, paginated, {</span>
-      page, limit, total, totalPages: Math.ceil(total / limit),
-    }, "All emails fetched");
+/**
+ * Stop the worker (graceful shutdown).
+ */
+async function <span class="fstat-no" title="function not covered" >stopReminderWorker(</span>) {
+<span class="cstat-no" title="statement not covered" >  if (_worker) {</span>
+<span class="cstat-no" title="statement not covered" >    await _worker.close();</span>
+<span class="cstat-no" title="statement not covered" >    _worker = null;</span>
+<span class="cstat-no" title="statement not covered" >    logger.info("ReminderWorker", "Worker stopped");</span>
   }
-});
+}
 &nbsp;
-// Stage-specific handlers — generated via factory
-exports.getRegistrationEmails = getEmailsByStage("registration");
-exports.getRegisteredEmails   = getEmailsByStage("registered");
-exports.getInProgressEmails   = getEmailsByStage("inprogress");
-exports.getConfirmedEmails    = getEmailsByStage("confirmed");
-&nbsp;
-// DELETE /api/emails/:type/:id — delete a single email and its pending reminders
-exports.deleteEmail = asyncHandler(async (req, res) =&gt; {
-  const { type, id } = req.params;
-&nbsp;
-  const modelEntry = MODEL_MAP[type];
-  if (!modelEntry) {
-    return sendError(res, 400, `Invalid email type: ${type}`);
-  }
-&nbsp;
-  // Only allow deleting own emails
-  const email = await modelEntry.model.findOne({ _id: id, userId: req.user._id });
-  if (!email) {
-    return sendError(res, 404, "Email not found");
-  }
-&nbsp;
-  // Delete the email
-  await modelEntry.model.deleteOne({ _id: id });
-&nbsp;
-  // Also cancel any pending reminders linked to this email
-  await Reminder.deleteMany({ emailId: id, status: "pending" });
-&nbsp;
-  logger.info("Email", `Deleted ${type} email ${id} and associated reminders`);
-  sendSuccess(res, 200, "Email deleted successfully");
-});
+module.exports = {
+  startReminderWorker,
+  stopReminderWorker,
+  processReminderJob,
+  formatReminderMessage,
+};
 &nbsp;</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
@@ -690,14 +684,14 @@ exports.deleteEmail = asyncHandler(async (req, res) =&gt; {
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
                 at 2026-06-16T09:50:45.511Z
             </div>
-        <script src="../../prettify.js"></script>
+        <script src="../prettify.js"></script>
         <script>
             window.onload = function () {
                 prettyPrint();
             };
         </script>
-        <script src="../../sorter.js"></script>
-        <script src="../../block-navigation.js"></script>
+        <script src="../sorter.js"></script>
+        <script src="../block-navigation.js"></script>
     </body>
 </html>
     

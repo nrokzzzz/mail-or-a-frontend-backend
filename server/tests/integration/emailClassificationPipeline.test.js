@@ -39,6 +39,11 @@ jest.mock("../../services/emailAI.service", () => ({
   classifyEmail: jest.fn(),
 }));
 
+// Mock the BullMQ reminder queue so reminder creation never touches Redis.
+jest.mock("../../services/reminderQueue.service", () => ({
+  scheduleReminder: jest.fn().mockResolvedValue(undefined),
+}));
+
 jest.mock("../../utils/crypto", () => ({
   encrypt: jest.fn((text) => `enc:${text}`),
   decrypt: jest.fn((text) => (text && text.startsWith("enc:") ? text.slice(4) : text)),

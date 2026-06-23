@@ -12,6 +12,7 @@
 #   - kafka:            Kafka message broker
 #   - zookeeper:        Kafka dependency
 #   - mongo:            MongoDB database (dev only — use Atlas in production)
+#   - redis:            Redis (BullMQ delayed-job scheduling for reminders)
 # ──────────────────────────────────────────────────────────────────────────────
 
 version: "3.8"
@@ -67,6 +68,21 @@ services:
       timeout: 5s
       retries: 5
 
+  # ─── Redis (BullMQ delayed-job scheduling for reminders) ─────────────────
+  redis:
+    image: redis:7.2-alpine
+    # AOF persistence so scheduled (delayed) reminder jobs survive a restart.
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # ─── Main Server ────────────────────────────────────────────────────────
   server:
     build:
@@ -79,11 +95,14 @@ services:
         condition: service_healthy
       mongo:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     env_file:
       - server/.env
     environment:
       - KAFKA_BROKERS=kafka:29092
       - MONGO_URI=mongodb://mongo:27017/mailora
+      - REDIS_URL=redis://redis:6379
       - WHATSAPP_SERVICE_URL=http://whatsapp-service:5002
       - NODE_ENV=development
       - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost:80
@@ -138,3 +157,4 @@ services:
 
 volumes:
   mongo_data:
+  redis_data:
