@@ -10,7 +10,8 @@ COPY . .
 
 EXPOSE 5001
 
+# serpapiservice serves its health payload at "/" (there is no /health route)
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s \
-  CMD wget -q --spider http://localhost:5001/health || exit 1
+  CMD wget -q --spider http://localhost:5001/ || exit 1
 
 CMD ["node", "server.js"]

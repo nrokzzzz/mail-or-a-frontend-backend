@@ -1,0 +1,74 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# VM3 — SerpAPI Job Search microservice (+ its own MongoDB) — PUBLIC via domain
+#
+# Public URL:  https://${SEARAPI_DOMAIN}   (e.g. searapi.mail-or-a.dev)
+#   → Caddy terminates TLS (auto Let's Encrypt) and reverse-proxies to serpapi.
+#   → /search and /roles are public reads; POST /refresh is protected by
+#     JOBS_API_KEY (it spends SerpAPI credits).
+#
+# The main server (VM2) still reaches serpapi over the PRIVATE network for
+# internal job proxying (faster, and defense-in-depth), while the public domain
+# is available for external use. serpapi does NOT use Kafka.
+#
+# DNS: point ${SEARAPI_DOMAIN} → this VM's PUBLIC IP before first boot (ACME).
+# Firewall: open 80 + 443 publicly on this VM (Caddy/ACME); keep 5001 private.
+#
+# Run:  cp ../.env.example .env
+#       docker compose up -d --build
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: mailora-vm3-serpapi
+
+services:
+  mongo:
+    image: mongo:7.0
+    volumes:
+      - serpapi_mongo_data:/data/db
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  serpapiservice:
+    build:
+      context: ../../serpapiservice
+      dockerfile: Dockerfile
+    ports:
+      # Private-only: VM2's server proxy reaches serpapi here over the private net.
+      - "${VM3_PRIVATE_IP}:5001:5001"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    env_file:
+      - ../../serpapiservice/.env
+    environment:
+      - NODE_ENV=production
+      - PORT=5001
+      - MONGO_URI=mongodb://mongo:27017/serpapi
+      # When set, POST /refresh requires a matching x-api-key.
+      - JOBS_API_KEY=${JOBS_API_KEY}
+    restart: unless-stopped
+
+  # ─── Caddy — public HTTPS front door (auto TLS) ──────────────────────────────
+  caddy:
+    image: caddy:2-alpine
+    depends_on:
+      - serpapiservice
+    ports:
+      - "80:80"     # public — ACME HTTP challenge + redirect to HTTPS
+      - "443:443"   # public — HTTPS
+    environment:
+      - SEARAPI_DOMAIN=${SEARAPI_DOMAIN}
+      - CADDY_EMAIL=${CADDY_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data       # persisted certificates
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  serpapi_mongo_data:
+  caddy_data:
+  caddy_config:

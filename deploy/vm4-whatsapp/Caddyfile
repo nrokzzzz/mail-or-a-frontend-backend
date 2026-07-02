@@ -1,0 +1,10 @@
+# Caddy config for VM4 (whatsapp). Auto-provisions a Let's Encrypt cert for the
+# domain and reverse-proxies to the whatsapp-service container. The app itself
+# enforces the API key on /api/send*, so Caddy just terminates TLS + forwards.
+{
+	email {$CADDY_EMAIL}
+}
+
+{$WHATSAPP_DOMAIN} {
+	reverse_proxy whatsapp-service:5002
+}

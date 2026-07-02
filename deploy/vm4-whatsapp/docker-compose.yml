@@ -1,0 +1,73 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# VM4 — WhatsApp messaging microservice — PUBLIC via domain
+#
+# Public URL:  https://${WHATSAPP_DOMAIN}   (e.g. whatsapp.mail-or-a.dev)
+#   → Caddy terminates TLS (auto Let's Encrypt) and reverse-proxies to the app.
+#   → /api/send and /api/send-bulk are protected by WHATSAPP_API_KEY, so only
+#     the main server (which sends the matching x-api-key) can trigger sends.
+#     /health stays open for uptime checks.
+#
+# Drives a real WhatsApp Web session (Puppeteer/Chromium). It is also a Kafka
+# CLIENT that connects OUT to VM2's Kafka to consume `whatsapp-messages`.
+# The main server (VM2) still calls this service over the PRIVATE network.
+#
+# FIRST RUN REQUIRES A QR SCAN — see notes below.
+# DNS: point ${WHATSAPP_DOMAIN} → this VM's PUBLIC IP before first boot (ACME).
+# Firewall: open 80 + 443 publicly (Caddy/ACME); keep 5002 private.
+#
+# Run:  cp ../.env.example .env
+#       docker compose up -d --build
+#       docker compose logs -f whatsapp-service   # scan the QR on first run
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: mailora-vm4-whatsapp
+
+services:
+  whatsapp-service:
+    build:
+      context: ../../whatsapp-service
+      dockerfile: Dockerfile
+    ports:
+      # Private-only: VM2's server calls this HTTP API over the private net.
+      - "${VM4_PRIVATE_IP}:5002:5002"
+    # Optional: whatsapp-service has no required secrets — all its config is set
+    # via `environment:` below. Loaded if the file happens to exist.
+    env_file:
+      - path: ../../whatsapp-service/.env
+        required: false
+    environment:
+      - NODE_ENV=production
+      - PORT=5002
+      - KAFKA_BROKERS=${VM2_PRIVATE_IP}:9092
+      # When set, /api/send and /api/send-bulk require a matching x-api-key.
+      - WHATSAPP_API_KEY=${WHATSAPP_API_KEY}
+      # The server (VM2) calls this service; allow it + the public domain in CORS.
+      - ALLOWED_ORIGINS=${SERVER_PUBLIC_URL},http://${VM2_PRIVATE_IP}:5000
+    # Chromium needs more shared memory than Docker's 64MB default, or it crashes.
+    shm_size: "1gb"
+    volumes:
+      # Persist the WhatsApp login session so you only scan the QR ONCE.
+      - whatsapp_auth:/app/.wwebjs_auth
+    restart: unless-stopped
+
+  # ─── Caddy — public HTTPS front door (auto TLS) ──────────────────────────────
+  caddy:
+    image: caddy:2-alpine
+    depends_on:
+      - whatsapp-service
+    ports:
+      - "80:80"     # public — ACME HTTP challenge + redirect to HTTPS
+      - "443:443"   # public — HTTPS
+    environment:
+      - WHATSAPP_DOMAIN=${WHATSAPP_DOMAIN}
+      - CADDY_EMAIL=${CADDY_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data       # persisted certificates
+      - caddy_config:/config
+    restart: unless-stopped
+
+volumes:
+  whatsapp_auth:
+  caddy_data:
+  caddy_config:

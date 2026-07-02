@@ -1,0 +1,124 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# VM2 — Main backend + co-located infrastructure
+#
+#   Runs: server (public API) + Kafka + Zookeeper + Redis + MongoDB
+#
+# Networking:
+#   - server API :5000   → published publicly (browser + Gmail Pub/Sub webhook)
+#   - kafka      :9092    → published on the PRIVATE IP only (for VM4 whatsapp)
+#   - mongo/redis         → NOT published; only the server container (same
+#                           Docker network) talks to them.
+#
+# Run:  cp ../.env.example .env   # then edit the IPs/URLs
+#       docker compose up -d --build
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: mailora-vm2-server
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    healthcheck:
+      test: echo srvr | nc localhost 2181 || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    ports:
+      # Publish 9092 on the PRIVATE interface only, so VM4 can reach it but the
+      # public internet cannot. Requires VM2_PRIVATE_IP to be an address that
+      # exists on this host.
+      - "${VM2_PRIVATE_IP}:9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      # Two listeners:
+      #   INTERNAL (29092) → used by the server container on this same VM.
+      #   EXTERNAL (9092)  → advertised as VM2's private IP so VM4 connects here.
+      # The advertised EXTERNAL address is the #1 thing to get right for
+      # cross-VM Kafka — clients reconnect to whatever is advertised.
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:29092,EXTERNAL://${VM2_PRIVATE_IP}:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: kafka-topics --bootstrap-server localhost:29092 --list || exit 1
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7.0
+    volumes:
+      - mongo_data:/data/db
+    # Not published — internal to this VM's Docker network only.
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh --quiet || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2-alpine
+    # AOF persistence so delayed (scheduled) reminder jobs survive a restart.
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+    # Not published — internal to this VM's Docker network only.
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  server:
+    build:
+      context: ../..
+      dockerfile: server/Dockerfile
+    ports:
+      - "5000:5000"                       # public API + webhook
+    depends_on:
+      kafka:
+        condition: service_healthy
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    # All your secrets live here (JWT_SECRET, Google OAuth, GEMINI_API_KEY,
+    # S3 creds, WEBHOOK_SECRET, GOOGLE_PUBSUB_TOPIC, etc.).
+    env_file:
+      - ../../server/.env
+    # These OVERRIDE anything in server/.env (compose precedence) so the
+    # deployment wiring is correct regardless of the dev values in that file.
+    environment:
+      - NODE_ENV=production
+      - KAFKA_BROKERS=kafka:29092
+      - MONGO_URI=mongodb://mongo:27017/mailora
+      - REDIS_URL=redis://redis:6379
+      - WHATSAPP_SERVICE_URL=http://${VM4_PRIVATE_IP}:5002
+      - JOBS_SERVICE_URL=http://${VM3_PRIVATE_IP}:5001/api/jobs
+      # Shared secrets so the server can call the now-public VM3/VM4 protected
+      # endpoints (sent as x-api-key). Must match the keys set on VM3/VM4.
+      - WHATSAPP_API_KEY=${WHATSAPP_API_KEY}
+      - JOBS_API_KEY=${JOBS_API_KEY}
+      - ALLOWED_ORIGINS=${CLIENT_PUBLIC_URL}
+    restart: unless-stopped
+
+volumes:
+  mongo_data:
+  redis_data:

@@ -12,6 +12,7 @@ const express = require("express");
 const router = express.Router();
 const Job = require("../models/job.model");
 const { refreshJobs } = require("../services/jobCron.service");
+const apiKeyAuth = require("../middleware/apiKeyAuth");
 
 /* ──────────────────────────────────────────────────────────────
    GET /api/jobs/search
@@ -71,7 +72,7 @@ router.get("/roles", async (_req, res) => {
 /* ──────────────────────────────────────────────────────────────
    POST /api/jobs/refresh  → manually trigger a full refresh
    ────────────────────────────────────────────────────────────── */
-router.post("/refresh", async (_req, res) => {
+router.post("/refresh", apiKeyAuth, async (_req, res) => {
   try {
     const result = await refreshJobs();
     res.json({ success: true, ...result });

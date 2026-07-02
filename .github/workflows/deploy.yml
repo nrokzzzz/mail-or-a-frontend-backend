@@ -1,0 +1,124 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# Mailora — Self-hosted CD (deploy to the 4 VMs)
+#
+# Model: one self-hosted GitHub Actions runner PER VM, labelled vm1..vm4.
+# Each job runs ON its own VM and deploys only that VM — so:
+#   • no SSH keys, no bastion, no exposing VMs to the internet
+#   • secrets live on the VM (see below), never in GitHub
+#
+# Each VM must hold its environment files at (owned/readable by the runner user):
+#   /opt/mailora/deploy.env    ← the private IPs + public URLs (deploy/.env.example)
+#   /opt/mailora/server.env    ← VM2 only: server secrets (server/.env contents)
+#   /opt/mailora/serpapi.env   ← VM3 only: serpapi secrets (serpapiservice/.env)
+#
+# See deploy/RUNNER_SETUP.md for how to install the runners.
+# ──────────────────────────────────────────────────────────────────────────────
+
+name: Deploy (self-hosted)
+
+on:
+  workflow_dispatch: {} # manual "Run workflow" button
+  workflow_run: # auto-deploy after CI succeeds on main
+    workflows: ["Mailora CI"]
+    types: [completed]
+    branches: [main]
+
+# Never run two production deploys at once; let an in-progress deploy finish.
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  # ─── VM2: server + infra — deploy FIRST (others need its Kafka) ─────────────
+  deploy-vm2-server:
+    name: Deploy VM2 (server + Kafka/Redis/Mongo)
+    # Only proceed on a manual run OR a successful CI run.
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: [self-hosted, vm2]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Provide env files (secrets live on the VM)
+        run: |
+          cp /opt/mailora/server.env server/.env
+          cp /opt/mailora/deploy.env deploy/vm2-server/.env
+
+      - name: Deploy
+        run: >
+          docker compose
+          --env-file deploy/vm2-server/.env
+          -f deploy/vm2-server/docker-compose.yml
+          up -d --build --remove-orphans
+
+      - name: Prune old images
+        run: docker image prune -f
+
+  # ─── VM3: serpapi ──────────────────────────────────────────────────────────
+  deploy-vm3-serpapi:
+    name: Deploy VM3 (serpapi)
+    needs: deploy-vm2-server
+    runs-on: [self-hosted, vm3]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Provide env files (secrets live on the VM)
+        run: |
+          cp /opt/mailora/serpapi.env serpapiservice/.env
+          cp /opt/mailora/deploy.env deploy/vm3-serpapi/.env
+
+      - name: Deploy
+        run: >
+          docker compose
+          --env-file deploy/vm3-serpapi/.env
+          -f deploy/vm3-serpapi/docker-compose.yml
+          up -d --build --remove-orphans
+
+      - name: Prune old images
+        run: docker image prune -f
+
+  # ─── VM4: whatsapp ─────────────────────────────────────────────────────────
+  deploy-vm4-whatsapp:
+    name: Deploy VM4 (whatsapp)
+    needs: deploy-vm2-server
+    runs-on: [self-hosted, vm4]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Provide env file
+        run: cp /opt/mailora/deploy.env deploy/vm4-whatsapp/.env
+
+      - name: Deploy
+        run: >
+          docker compose
+          --env-file deploy/vm4-whatsapp/.env
+          -f deploy/vm4-whatsapp/docker-compose.yml
+          up -d --build --remove-orphans
+
+      - name: Prune old images
+        run: docker image prune -f
+      # NOTE: the WhatsApp session persists in the `whatsapp_auth` volume, so a
+      # redeploy does NOT require re-scanning the QR. Only the very first launch
+      # on a fresh VM needs it: `docker compose ... logs -f whatsapp-service`.
+
+  # ─── VM1: client — build bakes in the server URL, so deploy after VM2 ───────
+  deploy-vm1-client:
+    name: Deploy VM1 (client)
+    needs: deploy-vm2-server
+    runs-on: [self-hosted, vm1]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Provide env file
+        run: cp /opt/mailora/deploy.env deploy/vm1-client/.env
+
+      - name: Deploy
+        run: >
+          docker compose
+          --env-file deploy/vm1-client/.env
+          -f deploy/vm1-client/docker-compose.yml
+          up -d --build --remove-orphans
+
+      - name: Prune old images
+        run: docker image prune -f
