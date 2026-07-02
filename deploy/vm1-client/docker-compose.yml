@@ -1,22 +1,15 @@
 # ──────────────────────────────────────────────────────────────────────────────
-# VM1 — Client (React SPA) — HTTPS (self-signed) + CI/CD-safe
+# VM1 — Client (React SPA served by Nginx)
 #
-# Caddy terminates TLS on :443 using a self-signed cert generated on the VM.
-# The cert lives OUTSIDE the git workspace at /opt/mailora/certs so the CD
-# runner's `git clean` on checkout can never delete it (bind-mounted by ABSOLUTE
-# path below). The Caddyfile IS tracked in git and restored on every deploy.
+# The SPA runs in the user's browser, so the server URL it calls is baked in at
+# BUILD time (Vite). That URL must be the server's PUBLIC address (VM2), because
+# the browser — not this container — makes the API calls.
 #
-# Accessed via https://<VM1-IP> (no domain) — see Caddyfile (listens on bare
-# ports). Browsers show a "not trusted" warning (self-signed) — expected.
+# Run:  cp ../.env.example .env   # set SERVER_PUBLIC_URL
+#       docker compose up -d --build
 #
-# The SPA calls the server from the browser, so SERVER_PUBLIC_URL is baked in at
-# BUILD time and must be VM2's public HTTPS url.
-#
-# One-time on the VM (see deploy/DEPLOY_VM1.md):
-#   sudo mkdir -p /opt/mailora/certs
-#   sudo openssl req -x509 -newkey rsa:2048 -nodes -days 365 \
-#     -keyout /opt/mailora/certs/key.pem -out /opt/mailora/certs/cert.pem \
-#     -subj "/CN=<VM1-IP>" -addext "subjectAltName=IP:<VM1-IP>"
+# TLS: this serves plain HTTP on :80. Put a reverse proxy / load balancer
+# (Caddy, Nginx, or your cloud LB) in front for HTTPS on the public domain.
 # ──────────────────────────────────────────────────────────────────────────────
 
 name: mailora-vm1-client
@@ -29,26 +22,6 @@ services:
       args:
         VITE_BASE_URL: ${SERVER_PUBLIC_URL}
         VITE_API_URL: ${SERVER_PUBLIC_URL}
-    # Internal only — Caddy is the public front door.
-    expose:
-      - "80"
-    restart: unless-stopped
-
-  # ─── Caddy — HTTPS front door using the self-signed cert ─────────────────────
-  caddy:
-    image: caddy:2-alpine
-    depends_on:
-      - client
     ports:
-      - "80:80"     # public — HTTP→HTTPS redirect
-      - "443:443"   # public — HTTPS (self-signed)
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:ro      # tracked in git
-      - /opt/mailora/certs:/certs:ro             # persists across CD checkouts
-      - caddy_data:/data
-      - caddy_config:/config
+      - "80:80"
     restart: unless-stopped
-
-volumes:
-  caddy_data:
-  caddy_config:
