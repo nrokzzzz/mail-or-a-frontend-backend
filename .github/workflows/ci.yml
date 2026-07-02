@@ -101,18 +101,8 @@ jobs:
         run: |
           docker build -f client/Dockerfile -t mailora-client:ci client/
 
-      - name: Build serpapi Docker image
-        run: |
-          docker build -f serpapiservice/Dockerfile -t mailora-serpapi:ci serpapiservice/
-
-      - name: Build whatsapp Docker image
-        run: |
-          docker build -f whatsapp-service/Dockerfile -t mailora-whatsapp:ci whatsapp-service/
-
       - name: Verify images built
         run: |
           docker images mailora-server:ci
           docker images mailora-client:ci
-          docker images mailora-serpapi:ci
-          docker images mailora-whatsapp:ci
-          echo "All 4 Docker images built and verified successfully"
+          echo "Docker images built and verified successfully"

@@ -1,9 +1,0 @@
-# Caddy config for VM3 (serpapi). Auto-provisions a Let's Encrypt cert for the
-# domain and reverse-proxies to the serpapi container on the compose network.
-{
-	email {$CADDY_EMAIL}
-}
-
-{$SEARAPI_DOMAIN} {
-	reverse_proxy serpapiservice:5001
-}

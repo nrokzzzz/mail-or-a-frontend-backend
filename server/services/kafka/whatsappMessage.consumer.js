@@ -16,8 +16,6 @@ const CircuitBreaker = require("../../utils/circuitBreaker");
 const logger = require("../../utils/logger");
 
 const WHATSAPP_SERVICE_URL = process.env.WHATSAPP_SERVICE_URL || "https://whatsapp.mail-or-a.dev";
-// Sent as x-api-key when the WhatsApp service enforces a key (public deployment).
-const WHATSAPP_API_KEY = process.env.WHATSAPP_API_KEY;
 const MAX_RETRIES = 5;
 const BASE_BACKOFF_MS = 1000; // 1s, 2s, 4s, 8s, 16s
 const HTTP_TIMEOUT_MS = 15000;
@@ -52,10 +50,7 @@ async function processWhatsAppMessage(messagePayload) {
         axios.post(
           `${WHATSAPP_SERVICE_URL}/api/send`,
           { number: whatsappNumber, message },
-          {
-            timeout: HTTP_TIMEOUT_MS,
-            headers: WHATSAPP_API_KEY ? { "x-api-key": WHATSAPP_API_KEY } : {},
-          }
+          { timeout: HTTP_TIMEOUT_MS }
         )
       );
 

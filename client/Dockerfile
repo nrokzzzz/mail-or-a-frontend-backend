@@ -9,14 +9,6 @@ RUN npm ci
 
 # Copy source and build
 COPY . .
-
-# Vite inlines env vars at BUILD time, so the server URL the browser will call
-# must be baked in here. Passed from docker-compose build args.
-ARG VITE_BASE_URL
-ARG VITE_API_URL
-ENV VITE_BASE_URL=$VITE_BASE_URL
-ENV VITE_API_URL=$VITE_API_URL
-
 RUN npm run build
 
 # ─── Production Stage — serve with Nginx ──────────────────────────────────────

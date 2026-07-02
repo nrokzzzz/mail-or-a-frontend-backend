@@ -417,8 +417,6 @@ exports.sendMobileOtp = asyncHandler(async (req, res) => {
     await axios.post(`${whatsappUrl}/api/send`, {
       number: fullNumber,
       message: `🔐 Your Mail-or-a verification OTP is: *${otp}*\n\nThis code expires in 5 minutes. Do not share it with anyone.`
-    }, {
-      headers: process.env.WHATSAPP_API_KEY ? { "x-api-key": process.env.WHATSAPP_API_KEY } : {}
     });
   } catch (whatsappErr) {
     logger.error("User", "WhatsApp send failed", whatsappErr.message);
