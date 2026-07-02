@@ -105,7 +105,11 @@ jobs:
   # ─── VM1: client — build bakes in the server URL, so deploy after VM2 ───────
   deploy-vm1-client:
     name: Deploy VM1 (client)
-    needs: deploy-vm2-server
+    # Independent of VM2 — the client only bakes in the server URL at build time,
+    # so it can deploy on its own (useful for a VM1-first rollout).
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     runs-on: [self-hosted, vm1]
     steps:
       - uses: actions/checkout@v4
